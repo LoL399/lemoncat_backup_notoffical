@@ -1,8 +1,77 @@
 import React, { Component } from 'react';
 import cover from '../common/images/covers-cover.jpg';
 import { Link } from "react-router-dom";
+import movieservice from '../service/movieservice';
+import Wait from '../../Other/LoadingScreen';
+import MovieItem from './MovieItem';
+
+const genersOption = [{name:"Hành động",value:"Action"},{name:"Hài kịch",value:"Comedy"},{name:"Kịch",value:"Dramma"}
+,{name:"Kinh dị",value:"Horro"},{name:"Tình cảm",value:"Romance"},{name:"Kinh dị - hành động",value:"Thriller"},{name:"Viễn tưởng",value:"Fantasy"}]
+
 class MovieCatalog extends Component {
-    state = {  }
+	state = { listMovie: {}, page: 1, genre: "" }
+
+	componentDidMount(){
+		this.loadData();
+	}
+	
+	loadData(){
+		movieservice.list(this.state.page).then(res => {this.setState({listMovie: res.data}); console.log(this.state.listMovie)})
+	}
+
+	setPage(bool,where){
+		this.setState({listMovie: {}})
+		if(bool)
+		{
+			if(this.state.genre === "")
+			{
+				this.setState({page: this.state.page + where},()=>{movieservice.list(this.state.page).then(res => {this.setState({listMovie: res.data}); console.log(this.state.listMovie)})})
+
+			}
+			else
+			{
+				this.setState({page: this.state.page + where},()=>{movieservice.searchByGenres(this.state.page).then(res => {this.setState({listMovie: res.data}); console.log(this.state.listMovie)})})
+			}
+			
+
+		}
+		else
+		{
+			if(this.state.genre === "")
+			{
+				this.setState({page: where},()=>{movieservice.list(this.state.page).then(res => {this.setState({listMovie: res.data}); console.log(this.state.listMovie)})})
+
+			}
+			else
+			{
+				this.setState({page: where},()=>{movieservice.searchByGenres(this.state.page).then(res => {this.setState({listMovie: res.data}); console.log(this.state.listMovie)})})
+			}
+			
+		}
+
+	}
+	selectHandler = (e)=>{
+		this.setState({genre: e.target.value}, ()=> {
+
+			this.setState({listMovie: {}})
+
+			if(this.state.genre === "")
+			{
+				this.loadData()
+
+			}
+			else
+			{
+				const data = {genres : this.state.genre};
+				movieservice.searchByGenres(1,data).then(res => this.setState({listMovie: res.data}))
+
+			}
+
+
+		})
+
+	}
+
     render() { 
         return ( 
             <div>
@@ -18,124 +87,66 @@ class MovieCatalog extends Component {
                     </div>
                 </div>
             </section>
-            <div class="filter">
-		<div class="container">
-			<div class="row">
-				<div class="col-12">
-					<div class="filter__content">
-						<div class="filter__items">
-
-							<div class="filter__item">
-								<span class="filter__item-label">IMBd:</span>
-
-								<div class="filter__item-btn dropdown-toggle" role="button"data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-									<div class="filter__range">
-										<div id="filter__imbd-start"></div>
-										<div id="filter__imbd-end"></div>
-									</div>
-									<span></span>
-								</div>
-
-								<div class="filter__item-menu filter__item-menu--range dropdown-menu" aria-labelledby="filter-rate">
-									<div></div>
-								</div>
-							</div>
-
-							<div class="filter__item" >
-								<span class="filter__item-label">NĂM SẢN XUẤT:</span>
-
-								<div class="filter__item-btn dropdown-toggle" role="button" id="filter-year" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-									<div class="filter__range">
-										<div id="filter__years-start"></div>
-										<div id="filter__years-end"></div>
-									</div>
-									<span></span>
-								</div>
-
-								<div class="filter__item-menu filter__item-menu--range dropdown-menu" aria-labelledby="filter-year">
-									<div id="filter__years"></div>
-								</div>
-							</div>
-							
-							<div class="filter__item">
-								<span class="filter__item-label">THỂ LOẠI:</span>
-
-								<div class="filter__item-btn dropdown-toggle" role="button" id="filter-year" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-									<div class="filter__range">
-										<div id="filter__years-start"></div>
-										<div id="filter__years-end"></div>
-									</div>
-									<span></span>
-								</div>
-
-								<div class="filter__item-menu filter__item-menu--range dropdown-menu" aria-labelledby="filter-year">
-									<div id="filter__years"></div>
-								</div>
-							</div>
-							
-							<div class="filter__item" >
-								<span class="filter__item-label">GIẢI THƯỞNG:</span>
-
-								<div class="filter__item-btn dropdown-toggle" role="button" id="filter-year" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-									<div class="filter__range">
-										<div id="filter__years-start"></div>
-										<div id="filter__years-end"></div>
-									</div>
-									<span></span>
-								</div>
-
-								<div class="filter__item-menu filter__item-menu--range dropdown-menu" aria-labelledby="filter-year">
-									<div id="filter__years"></div>
-								</div>
-							</div>
-
+            <div className="filter">
+		<div className="container">
+			<div className="row">
+				<div className="col-12">
+					<div className="filter__content">
+						<div className="filter__items ">
+						<div className="input-group mb-3 ">
+						<div className="input-group-prepend">
+							<label className="input-group-text" for="inputGroupSelect01">Options</label>
+						</div>
+						<select className="custom-select" name="genre" onChange={this.selectHandler}>
+						<option selected={this.state.genre === ""} value="">Chọn thể loại...</option>
+							{genersOption.map((genre)=>{
+								return(<option value={genre.value} selected={this.state.genre === genre.value}>{genre.name}</option>)
+							})}
+							{/* <option selected>Choose...</option>
+							<option value="1" >One</option>
+							<option value="2">Two</option>
+							<option value="3">Three</option> */}
+						</select>
 						</div>
 
-						<button class="filter__btn" type="button">Tìm kiếm</button>
+
+
+						</div>
+{/* 
+						<button className="filter__btn" type="button">Tìm kiếm</button> */}
 
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-    <div class="catalog">
-		<div class="container">
-			<div class="row">
-                {/* Item */}
-				<div class="col-6 col-sm-4 col-lg-3 col-xl-2 homecolor">
-					<div class="card border-0 homecolor">
-						<div class="card__cover" >
-							<img src={cover} alt=""/><a href="#" class="card__play">
-								<i class="icon ion-ios-play"></i>
-							</a>
-						</div>
-						<div class="card__content">
-							<h3 class="card__title "><a href="#">Blindspotting</a></h3>
-							<span class="card__category">
-								<a href="#">Comedy</a>
-								<a href="#">Drama</a>
-							</span>
-							<span class="card__rate"><i class="icon ion-ios-star"></i>7.9</span>
-						</div>
-					</div>
-				</div>
-	
+    <div className="catalog">
+		<div className="container">	
+			{Object.keys(this.state.listMovie).length === 0 ? <div className="d-block mx-auto"><Wait/></div>:
+			<div>
+				{this.state.listMovie.movies.length < 1 ? <h2 className="text-light">không tìm thấy kết quả nào hết</h2> : null}
+				<MovieItem  list={this.state.listMovie}/>
 
-				{/* <!-- paginator --> */}
-				<div class="col-12">
-					<ul class="paginator"><li class="paginator__item paginator__item--prev">
-							<a href="#"><i class="icon ion-ios-arrow-back"></i></a>
-						</li>
-						<li class="paginator__item paginator__item--active"><a href="#">1</a></li>
-						<li class="paginator__item "><a href="0#">2</a></li>
-						<li class="paginator__item"><a href="#">3</a></li>
-						<li class="paginator__item"><a href="#">4</a></li>
-						<li class="paginator__item paginator__item--next">
-							<a href="#"><i class="icon ion-ios-arrow-forward"></i></a>
-						</li>
+				<div className="col-12">
+					<ul className="paginator">
+						{this.state.page > 1 ?
+						<li className="paginator__item paginator__item--prev">
+						<a a className="pointercursor" onClick={()=> this.setPage(true,-1)}><i className="icon ion-ios-arrow-back"></i></a>
+						</li> : null
+						 }
+						{this.state.page - 1 > 0 ? <li className="paginator__item "><a  className="pointercursor" onClick={()=> this.setPage(false,this.state.page-1)}>{this.state.page - 1}</a></li> : null }
+						<li className="paginator__item paginator__item--active"><a href="#">{this.state.page}</a></li>
+						{this.state.page === this.state.listMovie.page ? null : <li className="paginator__item "><a onClick={()=> this.setPage(false,this.state.page+1)} className="pointercursor">{this.state.page + 1}</a></li> }
+						{this.state.page < this.state.listMovie.page ?
+						<li className="paginator__item paginator__item--next">
+						<a className="pointercursor" onClick={()=> this.setPage(true,1)}><i className="icon ion-ios-arrow-forward"></i></a>
+						</li>: null
+						 }
+
 					</ul>
-                </div>
-                </div>
+				</div> 	
+			</div>}
+
 			</div>
 		</div>
 	</div>
@@ -143,5 +154,5 @@ class MovieCatalog extends Component {
          );
     }
 }
- 
+
 export default MovieCatalog;

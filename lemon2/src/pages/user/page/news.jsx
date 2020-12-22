@@ -1,7 +1,31 @@
 import React, { Component } from 'react';
 import cover from '../common/images/covers-cover.jpg';
+import newsservice from '../service/newsservice';
+import renderHTML from 'react-render-html';
+import Wait from '../../Other/LoadingScreen';
+import userservice from '../service/userservice';
 class NewsDetail extends Component {
-    state = {  }
+	state = { isLogin: true, newsInfo: null, date: "" }
+
+
+	componentDidMount(){
+
+		newsservice.getOne(this.props.match.params.id).then(res=> 
+			{
+				this.setState({newsInfo: res.data}, 
+					 ()=>{
+						 console.log(res.data)
+						let date = new Date(String(this.state.newsInfo.createdAt));
+						this.setState({year: String(date.getFullYear()) })
+						this.setState({month: String(date.getMonth()+1)})
+						this.setState({dt: String(date.getDate()) })
+					}
+				
+					)
+			}
+			).catch((err)=>alert(`Toang rồi đại ca, mạng mất hoặc server có vấn đề. Chi tiết: \n ${err}`))
+		// console.log(this.props.match.params.id)
+	}
     render() { 
         return ( 
             <div className="h-100">
@@ -9,7 +33,11 @@ class NewsDetail extends Component {
                 <div className="container">
                     <div className="row">
                     <div className="col-12 col-lg-8 col-xl-8 content__head container">
-                        <h2 className="content__title">Tựa</h2>
+					{this.state.newsInfo===null? <div className="d-block mx-auto container"><Wait/></div>:
+
+					<div>
+					
+                        <h2 className="content__title">{this.state.newsInfo.name}</h2>
                             <div className="container">
                             <div className="card card--details card--series homecolor border-0">
                             <div className="row">
@@ -19,12 +47,12 @@ class NewsDetail extends Component {
                                     <div className="card__content">
                                         <div className="card__wrap">
                                             <ul className="card__list">
-                                                <li>By: Hello</li>
-                                                <li>10/10/2010</li>
+                                                <li>Tác giả: {this.state.newsInfo.byUser.name} </li>
+                                                <li>Ngày đăng: {this.state.dt + '/'+this.state.month+'/'+this.state.year}</li>
                                             </ul>
                                         </div>
                                         <div className="b-description_readmore_wrapper js-description_readmore_wrapper" ><div className="card__description card__description--details b-description_readmore_ellipsis" >
-                                            It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).
+											<div  dangerouslySetInnerHTML={{__html: this.state.newsInfo.content}}></div>
                                         </div>
 
                                         </div>
@@ -33,6 +61,7 @@ class NewsDetail extends Component {
                             </div>
                         </div>
                             </div>
+					</div>}
                             <hr className="newshr"/>
                             <CommentNews/>
 

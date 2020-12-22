@@ -195,7 +195,7 @@ class UserDetail extends Component {
     else
     {
       userservice.add(data).then(res=>{        
-        if(res.status === 200)
+        if(res.status === 201)
         {
           window.location.reload();
         }
@@ -204,9 +204,6 @@ class UserDetail extends Component {
           alert("Thông tin email bị trùng hoặc sai xót. Xin hãy kiểm tra lại"); 
         }})
     }
-    
-
-
   }
 
   handleChange = event => {

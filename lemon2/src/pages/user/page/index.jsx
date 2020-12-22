@@ -2,9 +2,21 @@ import React, { Component } from 'react';
 import cover from '../common/images/covers-cover.jpg';
 import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
-
+import movieservice from '../service/movieservice';
+import Wait from '../../Other/LoadingScreen';
 class MainPage extends Component {
-    state = {  }
+	state = { hotList: null, movieList: null, newsList: null }
+	
+	componentDidMount(){
+		this.loadData()
+	}
+
+	loadData(){
+		movieservice.listHot().then(res => {this.setState({hotList: res.data});console.log(res.data)}).catch((err)=>alert(`Toang rồi đại ca, mạng mất hoặc server có vấn đề. Chi tiết: \n ${err}`))
+		movieservice.listNew().then(res => {this.setState({movieList: res.data});console.log(res.data)}).catch((err)=>alert(`Toang rồi đại ca, mạng mất hoặc server có vấn đề. Chi tiết: \n ${err}`))
+	}
+
+
     render() { 
 		
         return ( 	
@@ -15,7 +27,7 @@ class MainPage extends Component {
 				<div class="col-12">
 					<h1 class="home__title">CHƯƠNG TRÌNH MỚI CỦA MÙA</h1>
 				</div>
-				<MovieDeck/>
+				{this.state.hotList===null? <div className="d-block mx-auto"><Wait/></div>:<MovieDeck list={this.state.hotList}/>}
 		</div>
 	</div>
 	</section>
@@ -57,47 +69,7 @@ class MainPage extends Component {
 		<div className="container">
 			<div className="tab-content" id="myTabContent">
 				<div className="tab-pane fade show active" id="tab-1" role="tabpanel" aria-labelledby="1-tab">
-					<div className="row">
-						{/* item */}
-						<div className="col-6 col-sm-12 col-lg-6">
-							<div className="card card--list homecolor border-0">
-								<div className="row">
-									<div className="col-12 col-sm-4">
-										<div className="card__cover">
-											<img src={cover} alt=""/><a href="#" className="card__play">
-												<i className="icon ion-ios-play"></i>
-											</a>
-										</div>
-									</div>
-
-									<div className="col-12 col-sm-8">
-										<div className="card__content">
-											<h3 className="card__title"><a href="#">I Dream in Another Language</a></h3>
-											<span className="card__category">
-												<a href="#">Action</a>
-												<a href="#">Triler</a>
-											</span>
-
-											<div className="card__wrap">
-												<span className="card__rate"><i className="icon ion-ios-star"></i>8.4</span>
-
-												<ul className="card__list"><li>HD</li>
-													<li>16+</li>
-												</ul></div>
-
-											<div className="card__description">
-												<p>It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English.</p>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-						
-
-
-
-					</div>
+				{this.state.hotList===null? <div className="d-block mx-auto"><Wait/></div>:<MovieList list={this.state.hotList}/>}
 				</div>
 				
 				<div class="tab-pane fade" id="tab-2" role="tabpanel" aria-labelledby="2-tab">
@@ -133,26 +105,100 @@ class MainPage extends Component {
     }
 }
 
+class MovieList extends Component {
+	state = {  }
+	render() { 
+		return ( 					
+		<div className="row">
+		{/* item */}
+		{this.props.list.map((movie,idx) => {
+			return(
+				<div className="col-6 col-sm-12 col-lg-6">
+				<div className="card card--list homecolor border-0">
+					<div className="row">
+						<div className="col-12 col-sm-4">
+							<div className="card__cover">
+								<img src={movie.poster} alt="poster"/><a href="#" className="card__play">
+									<i className="icon ion-ios-play"></i>
+								</a>
+							</div>
+						</div>
+	
+						<div className="col-12 col-sm-8">
+							<div className="card__content">
+								<h3 className="card__title cardheader"><a href="#">{movie.name}</a></h3>
+								<span className="card__category">
+									{movie.genres.map((genre,idx)=>{
+										return(
+											<a href="#">{genre}</a>
+										)
+
+									})}
+
+
+								</span>
+	
+								{/* <div className="card__wrap">
+									<span className="card__rate"><i className="icon ion-ios-star"></i>8.4</span>
+	
+									<ul className="card__list"><li>HD</li>
+										<li>16+</li>
+									</ul></div> */}
+	
+								<div className="card__description ">
+									<p className="text-justify">{movie.summary}</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			)
+		})}
+
+		
+
+
+
+	</div> );
+	}
+}
+
+
 class MovieDeck extends Component {
 	state = {  }
+
+
+
 	render() { 
 		return ( 				
 		<section className="card-list">
+
+			{this.props.list.map((movie,idx)=>{
+				if(movie.hot)
+				{
+					return(					
+					<article className="card2">
+					<header className="border-0">
+						<a className="pointercursor"> <h4 className=" text-light cardheader">{movie.name}</h4></a>
+					</header>
+					<img  className="posterImg mt-3" src={movie.poster} alt="1"/>
+		
+					</article>)
+
+				}
+			})}
 	
+
+{/* 
+
 			<article className="card2">
 			<header className="border-0">
 				<a className="pointercursor"> <h2 className=" text-light cardheader">Tên phim</h2></a>
 			</header>
 			<img  className="posterImg mt-3" src={cover} alt="1"/>
 
-			</article>
-			<article className="card2">
-			<header className="border-0">
-				<a className="pointercursor"> <h2 className=" text-light cardheader">Tên phim</h2></a>
-			</header>
-			<img  className="posterImg mt-3" src={cover} alt="1"/>
-
-			</article>
+			</article> */}
 			
 
 

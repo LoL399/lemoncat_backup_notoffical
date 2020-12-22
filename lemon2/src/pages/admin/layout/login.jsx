@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import loginservice from '../service/loginservice';
 import Cookies from "js-cookie";
-import jwt from 'jwt-simple';
+
 import cookieUlti from '../common/cookieUlti';
 class Login extends Component {
     state = {  
@@ -33,12 +33,13 @@ class Login extends Component {
             //redirec to dashboard
 
             this.setState({message:""});
-            
             //luu cookie  //expires:1 
             // let token = jwt.encode(data, res.data);
-            localStorage.setItem('user', res.data.id)
+            localStorage.setItem('user', res.data.data.id)
+            console.log(localStorage.getItem('user'))
             Cookies.set("loginInfo",res.data.token,{expires:1});  
             this.props.history.push('/admin');
+            this.props.history.go(0);
 
 
         }).catch(()=>this.setState({message:"Tài khoản không tìm thấy"}))

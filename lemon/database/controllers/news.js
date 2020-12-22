@@ -21,11 +21,11 @@ const create = (req, res) => {
 const getAll = (req, res) => {
   News.find()
     .then((news) => res.json(news))
-    .catch((err) => res.status(400).json("Error: " + err));
+    .catch((err) => console.log(err));
 };
 
 const getById = (req, res) => {
-  News.findById(req.params.id)
+  News.findById(req.params.id).populate("byUser", "name")
     .then((news) => res.json(news))
     .catch((err) => res.status(400).json("Error: " + err));
 };
@@ -46,6 +46,15 @@ const updateById = (req, res) => {
     .catch((err) => res.status(400).json("Error: " + err));
 };
 
+
+const searchByName = (req, res) => {
+  var results = new RegExp('.*' + req.params.search  + '.*', 'i')
+
+  News.find({name: results}).select("-content -tag -comment -like")
+  .then((news) => res.json(news))
+  .catch((err) => res.status(400).json("Error: " + err));
+}
+
 const adminUpdateById = (req, res) => {
   News.findById(req.params.id)
     .then((news) => {
@@ -56,11 +65,12 @@ const adminUpdateById = (req, res) => {
       news.active = req.body.active;
       news.tag = req.body.tag;
       news.hot = req.body.hot;
+      news.poster = req.body.poster
 
-      movie
+      news
         .save()
         .then(() => res.json("Movie updated!"))
-        .catch((err) => res.status(400).json("Error: " + err));
+        .catch((err) => console.log(err));
     })
     .catch((err) => res.status(400).json("Error: " + err));
 };
@@ -71,6 +81,45 @@ const deleteById = (req, res) => {
     .catch((err) => res.status(400).json("Error: " + err));
 };
 
+const getNewest = (req,res) => {
+  News.find({active: true}).limit(6).then(data => res.json(data)).catch((err) => res.status(400).json("Error: " + err));
+}
+
+
+
+const getAllActive = (req, res) => {
+  let perPage = 8; // số lượng sản phẩm xuất hiện trên 1 page
+  let page = req.params.page ; 
+  let allItem = 0
+  let allpage = 0
+
+  console.log(page)
+
+  
+  News.find({active: true}).then(data => {
+    allItem = data.length; 
+    if(allItem%perPage > 0)
+    {
+      allpage = Math.floor(allItem/perPage) + 1
+
+    }
+    else
+    {
+      allpage = Math.floor(allItem/perPage)
+    };    
+    
+    News.find({active: true}).skip((perPage * page) - perPage).limit(perPage)
+    .then((news) => res.json({
+        news: news,
+        page: allpage}))
+    .catch((err) => res.status(400).json("Error: " + err));})
+
+  
+
+  
+
+};
+
 module.exports = {
   create,
   getAll,
@@ -78,4 +127,5 @@ module.exports = {
   updateById,
   deleteById,
   adminUpdateById,
+  getAllActive,  getNewest, searchByName
 };

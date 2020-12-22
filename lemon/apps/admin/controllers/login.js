@@ -3,22 +3,20 @@ var jwt = require('jsonwebtoken');
 const login = (req, res) => {
   // const { email, password } = req.body;
 
-  User.find({email: req.body.email, role: "admin"} ).then( data => {
+  User.findOne({email: req.body.email, role: "admin"} ).then( data => {
     // console.log(data);
     console.log(req)
-    if(data.length > 0)
-    {
-      if(data[0].password === req.body.password )
-        if(data[0].status)
+
+      if(data.password === req.body.password )
+        if(data.status)
         {
           returnData={
-            name: data[0].name,
-            photo: data[0].photo,
-            id: data[0]._id,
-            token:  jwt.sign({ data: data[0]._id }, 'Henshin')
+            name: data.name,
+            photo: data.photo,
+            id: data._id,
             
           }
-          return res.json( returnData);
+          return res.json({ data: returnData, token:  jwt.sign({ data: data._id }, 'Henshin')});
 
         }
         else
@@ -26,8 +24,7 @@ const login = (req, res) => {
           console.log("not active");
           return res.status(400).json("Your accout has ban. Please contact with the system later");
         }
-      
-    }
+
 
     console.log("Accout no found !");
     return res.status(404).json("Thông tin không đúng");

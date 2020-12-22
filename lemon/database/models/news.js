@@ -3,6 +3,8 @@ const { ObjectId } = mongoose.Schema.Types;
 
 const model = new mongoose.Schema(
   {
+    
+    poster: { type: String, default: null },
     byUser: { type: ObjectId, ref: "users" },
     name: { type: String },
     content: { type: String, required: true },

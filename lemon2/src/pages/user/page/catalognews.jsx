@@ -1,23 +1,52 @@
 import React, { Component } from 'react';
 import cover from '../common/images/covers-cover.jpg';
 import { Link } from "react-router-dom";
+import newsservice from '../service/newsservice';
+import Wait from '../../Other/LoadingScreen';
 
-class cardSlide extends Component {
-    state = {  }
-    render() { 
-        const cardStyle={
-            backgroundImage : `url(${this.props})`
-        }
-        return ( 
-            <div class="card3" style={cardStyle}>a</div>
-         );
-    }
-}
+// class cardSlide extends Component {
+//     state = {  }
+//     render() { 
+//         const cardStyle={
+//             backgroundImage : `url(${this.props})`
+//         }
+//         return ( 
+//             <div class="card3" style={cardStyle}>a</div>
+//          );
+//     }
+// }
 
 
 class NewsCatalog extends Component {
-    state = {  }
+    state = { listNews: {}, page: 1  }
 
+    
+	componentDidMount(){
+
+        this.loadData();
+
+	}
+	
+	loadData(){
+		newsservice.list(this.state.page).then(res => {this.setState({listNews: res.data}); console.log(this.state.listNews)})
+	}
+
+	setPage(bool,where){
+		this.setState({listNews: {}})
+		if(bool)
+		{
+
+			this.setState({page: this.state.page + where},()=>{newsservice.list(this.state.page).then(res => {this.setState({listNews: res.data}); console.log(this.state.listNews)})})
+			
+
+		}
+		else
+		{
+			this.setState({page: where},()=>{newsservice.list(this.state.page).then(res => {this.setState({listNews: res.data}); console.log(this.state.listNews)})})
+		}
+
+    }
+    
     render() { 
         return ( 
             <div>
@@ -98,8 +127,8 @@ class NewsCatalog extends Component {
             </div>
 
         </div> */}
-            <section class="animated-grid">
-            {/* <div class="card3" style={cardStyle}>a</div> */}
+            {/* <section class="animated-grid">
+            <div class="card3" style={cardStyle}>a</div>
             <div class="card3">b</div>
             <div class="card3">c</div>
             <div class="card3">d</div>
@@ -112,50 +141,37 @@ class NewsCatalog extends Component {
             <div class="card3">k</div>
             <div class="card3">l</div>
             <div class="card3">main</div>
-            </section>
+            </section> */}
 
         <h2 className="section__title">Tin tức mới nhất</h2>
-        <div class="row">
+        
 
             {/* Item */}
-            <div class="col-sm-6">
-                <div class="card homecolor border-0 mr-2">
-                <div class="row">
-                    <div class=" col-sm-6">
-                        <img src={cover} className=" mx-auto d-block w-75 h-75"/>
-                        
-                    </div>
-                    <div class=" col-sm-6">     
-                    <div class="card-body">
-                       
-                        <div className="text-light" >
-                            <h3 className="text-light">It is a long established fact that a reader.</h3>
-							<small className="text-light">09/09/2020</small>
-                        </div>
+            {Object.keys(this.state.listNews).length === 0 ? <div className="d-block mx-auto"><Wait/></div>:
+			<div>
 
-						<button className="sign__btn" type="button">Đọc thêm →</button>
+				<NewsItem page={this.state.page} list={this.state.listNews}/>
+                <div class="col-12">
+					<ul class="paginator">
+						{this.state.page > 1 ?
+						<li class="paginator__item paginator__item--prev">
+						<a a className="pointercursor" onClick={()=> this.setPage(true,-1)}><i class="icon ion-ios-arrow-back"></i></a>
+						</li> : null
+						 }
+						{this.state.page - 1 > 0 ? <li class="paginator__item "><a  className="pointercursor" onClick={()=> this.setPage(false,this.state.page-1)}>{this.state.page - 1}</a></li> : null }
+						
+						<li class="paginator__item paginator__item--active"><a href="#">{this.state.page}</a></li>
+						{this.state.page === this.state.listNews.page ? null : <li class="paginator__item "><a onClick={()=> this.setPage(false,this.state.page+1)} className="pointercursor">{this.state.page + 1}</a></li> }
+						{this.state.page < this.state.listNews.page ?
+						<li class="paginator__item paginator__item--next">
+						<a className="pointercursor" onClick={()=> this.setPage(true,1)}><i class="icon ion-ios-arrow-forward"></i></a>
+						</li>: null
+						 }
 
-                    </div>
-                    </div>
- 
-                    </div>
-                </div>
-            </div>
-            {/* <!-- paginator --> */}
-            <div class="col-12">
-                <ul class="paginator"><li class="paginator__item paginator__item--prev">
-                        <a href="#"><i class="icon ion-ios-arrow-back"></i></a>
-                    </li>
-                    <li class="paginator__item paginator__item--active"><a href="#">1</a></li>
-                    <li class="paginator__item "><a href="0#">2</a></li>
-                    <li class="paginator__item"><a href="#">3</a></li>
-                    <li class="paginator__item"><a href="#">4</a></li>
-                    <li class="paginator__item paginator__item--next">
-                        <a href="#"><i class="icon ion-ios-arrow-forward"></i></a>
-                    </li>
-                </ul>
-            </div>
-            </div>
+					</ul>
+				</div> 
+			</div>}
+            
         </div>
     </div>
 </div>
@@ -163,4 +179,66 @@ class NewsCatalog extends Component {
         );
     }
 }
+
+class NewsItem extends Component {
+
+	state = { }
+
+
+
+	render() { 
+		return ( 
+			<div class="row">
+			{/* Item */}
+			
+			{this.props.list.news.map((news,idx)=>{
+                let date = new Date(String(news.createdAt));
+                let year = date.getFullYear();
+                let month = date.getMonth()+1;
+                let dt = date.getDate();
+                
+                if (dt < 10) {
+                  dt = '0' + dt;
+                }
+                if (month < 10) {
+                  month = '0' + month;
+                }
+				return(
+					<div class="col-sm-6">
+                <div class="card homecolor mr-2">
+                <div class="row">
+                    <div class=" col-sm-6">
+                        <img src={news.poster} className=" mt-4 mx-auto d-block w-75 h-75"/>
+                        
+                    </div>
+                    <div class=" col-sm-6">     
+                    <div class="card-body">
+                       
+                        <div className="text-light" >
+                            <h3 className="text-light">{news.name}.</h3>
+							<small className="text-light">{dt+'/' + month + '/'+year}</small>
+                        </div>
+
+						<Link to={`/home/news/${news._id}`}><button className="sign__btn" type="button">Đọc thêm →</button></Link>
+
+                    </div>
+                    </div>
+ 
+                    </div>
+                </div>
+            </div>
+				)
+			})}
+
+
+
+
+
+			</div>
+
+		 );
+	}
+}
+ 
+
 export default NewsCatalog;

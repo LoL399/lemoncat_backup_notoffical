@@ -36,6 +36,8 @@ class LoadData extends Component {
   state = { modalState: false,modalType: 0, viewFlag: false, newsdetail: {} }
   componentDidMount(){
 
+    console.log(localStorage.getItem('user'))
+
     createtable();
   }
   
@@ -169,6 +171,7 @@ class NewsDetail extends Component {
             category: "",
             // like: [],
             active: "",
+            poster: "",
             //tag:"",
             isEdit: false}
 
@@ -189,15 +192,17 @@ class NewsDetail extends Component {
       }
   }
   submitForm(id){
-    const data = {
-      byUser: this.state.byUser,
-      name: this.state.name,
-      content: this.state.content,
-      category: this.state.category,
-      active: this.state.active,
-    }
+
     if(this.state.isEdit)
     {
+      const data = {
+        byUser: localStorage.getItem('user'),
+        name: this.state.name,
+        content: this.state.content,
+        category: this.state.category,
+        active: this.state.active,
+        poster: this.state.poster
+      }
       console.log("Only edit")
       // console.log(data)
       newsservice.update(id,data).then(res => { 
@@ -206,6 +211,13 @@ class NewsDetail extends Component {
     }
     else
     {
+      const data = {
+        name: this.state.name,
+        content: this.state.content,
+        category: this.state.category,
+        active: this.state.active,
+        poster: this.state.poster
+      }
       console.log("New",data)
       newsservice.add(data).then(res =>{
         if(res.status === 200)
@@ -225,32 +237,31 @@ class NewsDetail extends Component {
   }
   
 handleChange = event => {
-  if(event.target.name === "poster")
-  {
-    console.log(event.target.files[0])
-    const reader = new FileReader();
-    reader.readAsDataURL(event.target.files[0])
-    reader.onload = function () {
-      this.setState({[event.target.name]:(reader.result)})}.bind(this)
-  }
-  else if(event.target.name === "photos")
-  {
-    let collection = [];
-    (Array.isArray(this.state.photos) && this.state.photos.length) === false ? collection = [] : collection = this.state.photos;
+  // if(event.target.name === "poster")
+  // {
+  //   console.log(event.target.files[0])
+  //   const reader = new FileReader();
+  //   reader.readAsDataURL(event.target.files[0])
+  //   reader.onload = function () {
+  //     this.setState({[event.target.name]:(reader.result)})}.bind(this)
+  // }
+  // else if(event.target.name === "photos")
+  // {
+  //   let collection = [];
+  //   (Array.isArray(this.state.photos) && this.state.photos.length) === false ? collection = [] : collection = this.state.photos;
 
-    Array.from(event.target.files).forEach(element => {
-      const reader = new FileReader();
-      reader.readAsDataURL(element)
-      reader.onload = function () {
-        collection.push(reader.result)}.bind(this)}
-      );
-      this.setState({photos: collection});
-    console.log(collection)
+  //   Array.from(event.target.files).forEach(element => {
+  //     const reader = new FileReader();
+  //     reader.readAsDataURL(element)
+  //     reader.onload = function () {
+  //       collection.push(reader.result)}.bind(this)}
+  //     );
+  //     this.setState({photos: collection});
+  //   console.log(collection)
 
-  }
-  else
-  this.setState({[event.target.name]: event.target.value});
-  console.log(event.target.value)
+  // }
+  // else
+  this.setState({[event.target.name]: event.target.value}, ()=>console.log(this.state.poster));
   // this.validateForm();
 }
   loadData(props){
@@ -260,6 +271,9 @@ handleChange = event => {
     this.setState({content : props.content});
     this.setState({category : props.category});
     this.setState({active : props.active});
+    this.setState({poster : props.poster});
+
+    console.log(this.state)
     // this.setState({summary : props.summary});
   }   
   
@@ -273,10 +287,13 @@ handleChange = event => {
                         <input className="form-control" placeholder="Enter the head description" name="name" value={this.state.name} onChange={this.handleChange}/>
                       </div>
                       <div className="form-group col-md-6">
-                        <label for="Trailerlink">Author </label>
-                        <input className="form-control" placeholder="Enter the head description" name="byUser" value={this.state.byUser} onChange={this.handleChange}/>
+                      <label>Poster</label>
+                <input type="text" name="poster" className="form-control" placeholder="Enter the image link" value={this.state.poster}  onChange={this.handleChange}/>
+                <img className="w-25 h-50 d-flex justify-content-center" src={this.state.poster} />
+                        {/* <label for="Trailerlink">Author </label>
+                        <input className="form-control" placeholder="Enter the head description" name="byUser" value={this.state.byUser} onChange={this.handleChange}/> */}
                       </div>
-                    </div>
+            </div>
 
 
             <div className="form-group mb-3">

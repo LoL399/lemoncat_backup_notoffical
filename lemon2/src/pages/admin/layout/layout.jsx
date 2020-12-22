@@ -21,7 +21,7 @@ import routes from"../common/route"
 import { BrowserRouter, Route, Link, Switch, Redirect } from "react-router-dom";
 import Navbar from './navbar';
 import PrivateRoute from "../common/PrivateRoute"
-import NoAuth from '../../Other/401';
+import ServerError from '../../Other/400';
 import cookieUlti from '../common/cookieUlti';
 import jwt from 'jwt-simple';
 class AdminPage extends Component {
@@ -120,7 +120,7 @@ class AdminPage extends Component {
                                 else
                                 {
                                     return(
-                                        <Redirect exact to="/login" component={NoAuth}/>
+                                        <Redirect exact to="/login"/>
                                     )}
 
                                 }

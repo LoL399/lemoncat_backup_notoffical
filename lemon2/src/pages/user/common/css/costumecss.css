@@ -51,7 +51,7 @@ body,html,#root{
 }
 .logoLemon{
   height: auto;
-  width: 200px;
+  max-width:  150px;
 }
 .linear-wipe {
   text-align: center;
@@ -75,7 +75,7 @@ body,html,#root{
   }
 .detailReadmore
 {
-  height: 200px;
+  height: 0px;
   max-height: 200px;
   overflow: hidden;
 }
@@ -99,6 +99,10 @@ body,html,#root{
 }
 .card-list::-webkit-scrollbar-thumb {
   border-radius: 10px;
+}
+.well {
+  height: 500px;
+  width: 100%;
 }
 
 /* .card-list::-webkit-scrollbar-track {
@@ -135,8 +139,17 @@ body,html,#root{
 .card2:hover~.card2{
   transform: translateX(130px);
 }
+.metaReview {
+  background: rgb(240,243,7);
+  background: linear-gradient(38deg, rgba(240,243,7,1) 0%, rgba(184,124,23,1) 50%, rgba(200,207,45,1) 93%);
+}
 
-
+.score {
+  text-align: right;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  color: white;
+}
 .card2:not(:first-child) {
   margin-left: -130px;
 }
@@ -267,4 +280,25 @@ body,html,#root{
     grid-area: 🌟;
     animation-delay: calc(13 * var(--stagger-delay));
   }
+
+  .bg-user{
+    background: rgb(238,174,202);
+    background: radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%);
+  }
+  .bg-lemon{
+    background: rgb(63,94,251);
+    background: linear-gradient(344deg, rgba(63,94,251,1) 0%, rgba(252,70,107,1) 100%);
+  }
   
+  .borderGradient {
+    width: auto;
+    height: auto;
+    background: rgba(20,23,45,0.25);
+    border: solid 2px #0f0;
+    box-sizing: border-box;
+    border-radius: 5px;
+    border-image-slice: 10; /* border-radius*2 */
+    border-image-repeat: round;
+    border-image-width: 10px; /* border-radius*2 */
+    border-image-source: url('https://habrastorage.org/webt/5w/at/j9/5watj9cps1rjx9frtxktrx4lue0.png');
+  }

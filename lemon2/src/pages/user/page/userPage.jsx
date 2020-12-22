@@ -1,11 +1,43 @@
 import React, { Component } from 'react';
 import { ModalBody, Modal,Button } from 'react-bootstrap';
+import Wait from '../../Other/LoadingScreen';
+import cookieUlti from '../common/cookieUlti';
 import cover from '../common/images/covers-cover.jpg';
+import { passValidation } from '../common/validation';
+import userservice from '../service/userservice';
+import $ from 'jquery';
 class UserPage extends Component {
     state = { 
         modalState: false,
-        tabType: 0
+        tabType: 0,
+        userInfo: null
      }
+
+     componentDidMount(){
+       this.loadData();
+
+     }
+
+     loadData(){
+
+      this.checkLogin()
+       
+     }
+
+     checkLogin(){
+      if(cookieUlti.getCookie("userLogin")!==null)
+      {
+          userservice.getInfo().then(res => {this.setState({userInfo: res.data}, ()=>console.log(this.state.userInfo))}).catch((err) => {
+            this.props.history.replace("/404");
+            this.props.history.go(0)
+          })
+      }
+      else{
+        this.props.history.replace("/404");
+        this.props.history.go(0)
+
+      }
+    }
      setModalState=()=>{
         this.state.modalState===false ? this.setState({modalState: true}) : this.setState({modalState: false})
       }
@@ -13,7 +45,7 @@ class UserPage extends Component {
      renderSwitch(param) {
         switch(param) {
           case 1:
-            return <InfoChange/>;
+            return <InfoChange userInfo={this.state.userInfo}/>;
         case 2:
             return <PassChange/>;
         case 3:
@@ -30,7 +62,9 @@ class UserPage extends Component {
     render() { 
         return ( 
             <div className="h-100">
-            <section className="section details homecolor border-0 ">
+              {
+                this.state.userInfo === null ? <div className=" container-fluid section home h-100 color  border-0"><Wait/></div>:
+                <section className="section details homecolor border-0 ">
 
                 {/*ultilities */}
                 <div className="container">
@@ -104,7 +138,11 @@ class UserPage extends Component {
                 </div> 
               </div>
                 </div>
-                <Modal
+                
+            </section>
+                
+              }
+              <Modal
                 show={this.state.modalState}
                 onHide={this.setModalState}   
               >
@@ -138,35 +176,76 @@ class UserPage extends Component {
                 </Modal.Body>
             </Modal>
 
-            </section></div>
+            </div>
         );
     }
 }
 
 class InfoChange extends Component {
-    state = {  }
+    state = { name: "",photo: "", userInfo: {} }
+
+    componentDidMount(){
+      this.loadData();
+    }
+
+    loadData(){
+      this.setState({photo: this.props.userInfo.photo})
+      this.setState({name: this.props.userInfo.name});
+    }
+
+    submitForm(id){
+      const data={
+        id : this.props.userInfo._id, 
+        name : this.state.name,
+        photo : this.state.photo,
+      }
+      
+      console.log(data)
+      userservice.updateByUser(data).then((res) => {
+        window.location.reload();
+      }).catch(err => alert(err))
+
+    }
+
+    handleChange = event => {
+      if(event.target.name === "photo")
+      {
+        console.log(event.target.files[0])
+        const reader = new FileReader();
+        reader.readAsDataURL(event.target.files[0])
+        reader.onload = function () {
+          this.setState({[event.target.name]:(reader.result)})}.bind(this)
+      }
+      else
+      this.setState({[event.target.name]: event.target.value});
+      console.log( event.target.value)
+      // this.validateForm();
+    }
+  
+
     render() { 
         return ( 
 
-                <form action="#" className=" mt-3 mb-3">
-                <h3 className="text-white mb-4">Chỉnh thông tin cá nhân</h3>
+                <div className=" mt-3 mb-3">
+
+                <div>
+                 <h3 className="text-white mb-4">Chỉnh thông tin cá nhân</h3>
                 <div className="sign__group d-block mx-auto w-50">
-                <img src={cover} alt="..." className="avatar"/>
+                <img src={this.state.photo} alt="..." className="avatar"/>
                 </div>
                 <div className="sign__group d-block mx-auto w-50">
-                <span className="text-light">Thêm ảnh mới + </span></div>
+                {/* <span className="text-light">Thêm ảnh mới + </span> */}
+                <input type="file" accept="image/x-png,image/gif,image/jpeg" name="photo" className="text-light" onChange={this.handleChange} />
+                </div>
 
                 <div className="sign__group">
-                <input type="text" className="sign__input" placeholder="UserName"/></div>
+                <input type="text" className="sign__input" placeholder="UserName" name="name" value={this.state.name} onChange={this.handleChange}/></div>
+
+                <button className="sign__btn" type="button" onClick={()=>this.submitForm()}>Thay đổi</button> 
+                </div> 
 
 
-                <div className="sign__group">
-                    <input type="text" className="sign__input" placeholder="Email"/></div>
-
-                    <div className="sign__group">
-                    <input type="text" className="sign__input" placeholder="Phone Number"/></div>
-                <button className="sign__btn" type="button">Thay đổi</button>
-            </form>
+               </div>
 
 
 
@@ -175,21 +254,78 @@ class InfoChange extends Component {
 }
 
 class PassChange extends Component {
-    state = {  }
+    state = { oldPass: "", newPass: "", passValidate: "", comfirmPassValid: "", message: "", rePass: "" }
+
+    componentDidMount(){
+      $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip();
+        });
+  
+    }
+
+    handleChange = event => {
+      this.setState({[event.target.name]: event.target.value}, ()=> this.validateForm());
+      
+      console.log(event.target.value)
+
+    }
+  
+    async validateForm(){
+      this.state.passValidate = passValidation(this.state.newPass);
+      await this.state.rePass === this.state.newPass ? this.setState({comfirmPassValid: ""}): this.setState({comfirmPassValid: "Mật khẩu không giống"}) 
+    }
+
+    submit(){
+      this.validateForm();
+      if(this.state.passValidate === "" && this.state.comfirmPassValid ==="")
+      {
+        if(this.state.oldPass !="" && this.state.newPass !="" && this.state.rePass !="")
+        {
+          this.setState({message: ""});
+          console.log("SUBMITTING ...")
+          const data = {
+            oldPass: this.state.oldPass,
+            newPass: this.state.newPass
+          }
+
+          userservice.updatePass(data).then(res => {
+            res.data.right === false ? this.setState({message:"Mật khẩu cũ sai, xin hãy kiểm tra lại thông tin"}) : window.location.reload();
+          })
+  
+        }
+        else
+        this.setState({message: "Xin đừng bỏ trống thông tin nào hết"})
+  
+      }
+      else
+      {
+        this.setState({message: "Xin hẫy kiểm tra lại các thông tin"})
+        console.log("validate",this.state.emailValidate, this.state.comfirmPassValid, this.state.passValidate)
+      }
+  
+  
+  
+    }
+
+
+
     render() { 
         return (                 
         <form action="#" className="mb-3">
         <h3 className="text-white mt-4 mb-4">Thay đổi mât khẩu</h3>
         <div className="sign__group">
-        <input type="text" className="sign__input" placeholder="Mật khẩu cũ"/></div>
+        <input type="password" className= "sign__input"  name="oldPass" value={this.state.oldPass} onChange={this.handleChange } placeholder="Mật khẩu cũ"/></div>
 
         <div className="sign__group">
-            <input type="text" className="sign__input" placeholder="Mật khẩu mới"/></div>
+            <input type="password" data-toggle="tooltip" title={this.state.passValidate} 
+								className={this.state.passValidate === "" ? "sign__input" : "sign__input border border-danger"} name="newPass" value={this.state.newPass} onChange={this.handleChange }  placeholder="Mật khẩu mới"/></div>
 
         <div className="sign__group">
-            <input type="password" className="sign__input" placeholder="Nhập lại mât khẩu mới - xác minh"/></div>
+            <input type="password"  data-toggle="tooltip" title={this.state.comfirmPassValid} 
+								className={this.state.comfirmPassValid === "" ? "sign__input" : "sign__input border border-danger"} name="rePass" value={this.state.rePass} onChange={this.handleChange } placeholder="Nhập lại mât khẩu mới - xác minh"/></div>
 
-        <button className="sign__btn" type="button">Thay đổi mật khẩu</button>
+        <button className="sign__btn" type="button" onClick={()=>this.submit()}>Thay đổi mật khẩu</button>
+        <span className="sign__text text-danger">{this.state.message}</span>
     </form> 
     );
     }

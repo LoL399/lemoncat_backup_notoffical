@@ -1,13 +1,14 @@
 let Review = require("../models/reviews");
 
 const create = (req, res) => {
+  console.log(req.body)
   var review = {
     byUser: req.body.byUser,
     name: req.body.name,
     content: req.body.content,
     forMovie: req.body.forMovie,
     userScore: req.body.userScore,
-    tag: req.body.tag,
+    // tag: req.body.tag,
     comment: [],
   };
 
@@ -20,15 +21,15 @@ const create = (req, res) => {
 };
 
 const getAll = (req, res) => {
-  console.log("here")
+  // console.log("here")
   Review.find()
     .then((reviews) => res.json(reviews))
     .catch((err) => res.status(400).json("Error: " + err));
 };
 
 const getByMovie= (req, res) => {
-  Review.find({forMovie: req.params.id})
-  .then((reviews) => res.json(reviews))
+  Review.find({forMovie: req.params.id, active: true}).populate("byUser","name photo")
+  .then((reviews) => {res.json(reviews)})
   .catch((err) => res.status(400).json("Error: " + err));
 }
 
@@ -86,5 +87,5 @@ module.exports = {
   updateById,
   deleteById,
   adminUpdateById,
-  getByMovie
+  getByMovie,
 };

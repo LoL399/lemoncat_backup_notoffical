@@ -63,8 +63,9 @@ class ReviewModal extends Component {
           review.active = !review.active;
           console.log(review)
           reviewservice.update(review._id,review).then(() => { 
+
               // console.log(res)         
-            window.location.reload();
+            // window.location.reload();
             }).catch(err => console.log(err))
         })
       ],
@@ -122,10 +123,11 @@ class ReviewModal extends Component {
 }
 
 class LoadData extends Component {
-  state = { modalState: false,modalType: 0, viewFlag: false, movie: {}, getReviewId:""}
+  state = { modalState: false,modalType: 0, viewFlag: false, movie: {}, getReviewId:"", listmovie: []}
 
   componentDidMount(){
-    createtable();
+    this.setState({listmovie: this.props.listmovie},()=>{ createtable();});
+
   }
 
   setModalState=(type,addModal,data)=>{
@@ -158,8 +160,13 @@ class LoadData extends Component {
           movie.hot = !movie.hot;
           console.log(movie)
           movieservice.update(movie._id,movie).then((res) => { 
-              console.log(res)         
-            window.location.reload();
+              console.log(res)   
+                          
+            const index = this.state.listmovie.findIndex((element)=>{return element._id == movie._id})    
+            let item = this.state.listmovie;
+            item[index] = movie;
+            this.setState({listmovie: item})
+            // window.location.reload();
             }).catch(err => console.log(err))
           
 
@@ -184,8 +191,10 @@ class LoadData extends Component {
           movie.status = !movie.status;
           console.log(movie)
           movieservice.update(movie._id,movie).then(() => { 
-              // console.log(res)         
-            window.location.reload();
+            const index = this.state.listmovie.findIndex((element)=>{return element._id == movie._id})    
+            let item = this.state.listmovie;
+            item[index] = movie;
+            this.setState({listmovie: item})
             }).catch(err => console.log(err))
           
 
@@ -232,7 +241,7 @@ class LoadData extends Component {
               <tbody>
                 
                 {
-                  this.props.listmovie.map((movie,idx)=>{
+                  this.state.listmovie.map((movie,idx)=>{
                     return (
                       <tr key={idx}>
 
@@ -390,15 +399,15 @@ class MoviesDetails extends Component {
 
 
   handleChange = event => {
-    if(event.target.name === "poster")
-    {
-      console.log(event.target.files[0])
-      const reader = new FileReader();
-      reader.readAsDataURL(event.target.files[0])
-      reader.onload = function () {
-        this.setState({[event.target.name]:(reader.result)})}.bind(this)
-    }
-    else if(event.target.name === "images")
+    // if(event.target.name === "poster")
+    // {
+    //   console.log(event.target.files[0])
+    //   const reader = new FileReader();
+    //   reader.readAsDataURL(event.target.files[0])
+    //   reader.onload = function () {
+    //     this.setState({[event.target.name]:(reader.result)})}.bind(this)
+    // }
+    if(event.target.name === "images")
     {
       let collection = [];
       (Array.isArray(this.state.images) && this.state.images.length) === false ? collection = [] : collection = this.state.images;
@@ -555,7 +564,7 @@ class MoviesDetails extends Component {
               <div className="form-row"> 
                 <div className="form-group col-md-6">
                 <label>Poster</label>
-                <input type="file" name="poster" className="form-control-file"  accept="image/x-png,image/gif,image/jpeg" onChange={this.handleChange}/>
+                <input className="form-control" name="poster" placeholder="Enter trailer link" value={this.state.poster} onChange={this.handleChange} />
                 <img className="avatar d-flex justify-content-center"  src={this.state.poster} />
                 </div >
                 <div className="form-group col-md-6">

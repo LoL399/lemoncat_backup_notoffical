@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Dialog from 'react-bootstrap-dialog';
 import $ from 'jquery';
 import {emailValidation, passValidation} from '../common/validation.js'
+import userservice from '../service/userservice.js';
 
 class RecoverPass extends Component {
 	state = { 
@@ -9,6 +10,7 @@ class RecoverPass extends Component {
 		showInputNewPass: false,
 		buttonName: "Nhận mã khôi phục",
 		email: "", password: "", emailValidate: "", passValidate: "", recovercode:"",
+		message: "", sucess: 0
 
 
 	 }
@@ -18,6 +20,7 @@ class RecoverPass extends Component {
 		$(document).ready(function(){
 			$('[data-toggle="tooltip"]').tooltip();
 		  });
+		  this.validateForm();
 	}
 
 	handleChange = event => {
@@ -26,28 +29,45 @@ class RecoverPass extends Component {
 	}
 
 	validateForm(){
-		this.state.emailValidate = emailValidation(this.state.email);
-		this.state.passValidate = passValidation(this.state.password);
+		this.setState({emailValidate: emailValidation(this.state.email)});
+		// this.state.passValidate = passValidation(this.state.password);
 	}
-	 checkonClick(){
+	//  checkonClick(){
 
-		if(!this.state.showInputNewPass)
+	// 	if(!this.state.showInputNewPass)
+	// 	{
+	// 		if(!this.state.showInputCode)
+	// 		{
+	// 			this.setState({showInputCode : !this.state.showInputCode});
+	// 			this.setState({buttonName: "Xác nhận mã khôi phục"})
+	// 		}
+
+	// 		if(this.state.showInputCode)
+	// 		{
+	// 			this.setState({showInputNewPass : !this.state.showInputNewPass});
+	// 			this.setState({buttonName: "Đổi mật khẩu"})
+	// 			this.changeConfirm();
+	// 		}
+	// 	}
+
+	//  }
+
+	submit(){
+		
+		if(this.state.emailValidate === "")
 		{
-			if(!this.state.showInputCode)
-			{
-				this.setState({showInputCode : !this.state.showInputCode});
-				this.setState({buttonName: "Xác nhận mã khôi phục"})
-			}
+			console.log("sending...")
+			const data = {email: this.state.email}
+			userservice.recoverPass(data).then(res => this.setState({message: "Hãy kiểm tra email của bạn",sucess: 1})).catch(()=>{this.setState({message: "Emal của bạn không có trong hệ thống", sucess: 0})})
 
-			if(this.state.showInputCode)
-			{
-				this.setState({showInputNewPass : !this.state.showInputNewPass});
-				this.setState({buttonName: "Đổi mật khẩu"})
-				this.changeConfirm();
-			}
 		}
+		else
+		{
+			this.setState({message: "Hãy nhập đúng dạng email", sucess: 0})
+		}
+	}
 
-	 }
+	
 	 changeConfirm=()=>{
 		this.dialog.show({
 		  title: 'Thông báo',
@@ -74,16 +94,17 @@ class RecoverPass extends Component {
 							<div className="sign__group">
 							<input type="text" data-toggle="tooltip" title={this.state.emailValidate} 
 								className={this.state.emailValidate === "" ? "sign__input" : "sign__input border border-danger"} placeholder="Email khôi phục" name="email" value={this.state.email} onChange={this.handleChange}/></div>
-
+{/* 
 							{this.state.showInputCode === true ?
 								<div className="sign__group" >
 								<input type="text" className="sign__input" placeholder="Mã khôi phục" value={this.state.recovercode} name="recovercode" onChange={this.handleChange}/></div>: null}
 							{this.state.showInputNewPass === true ?
 							<div className="sign__group" >
 								<input type="password" data-toggle="tooltip" title={this.state.passValidate} 
-								className={this.state.passValidate === "" ? "sign__input" : "sign__input border border-danger"}placeholder="Mật khẩu mới" value={this.state.password} name="password" onChange={this.handleChange}/></div>: null}
+								className={this.state.passValidate === "" ? "sign__input" : "sign__input border border-danger"}placeholder="Mật khẩu mới" value={this.state.password} name="password" onChange={this.handleChange}/></div>: null} */}
 
-							<button className="sign__btn" type="button" onClick={()=>this.checkonClick()}>{this.state.buttonName}</button>
+							<button className="sign__btn" type="button" onClick={()=>this.submit()}>{this.state.buttonName}</button>
+							<span className={this.state.sucess === 0 ? "sign__text text-danger" :  "sign__text text-success"}>{this.state.message}</span>
 						</form>
 					</div>
 				</div>

@@ -7,7 +7,7 @@ import AdminPage from './pages/admin/layout/layout';
 import Login from './pages/admin/layout/login';
 import NoFound from './pages/Other/404';
 import ClientPage from './pages/user/layout/layout';
-import NoAuth from './pages/Other/401';
+import ServerError from './pages/Other/400';
 
 function App() {
   return (
@@ -17,7 +17,7 @@ function App() {
           <Route path='/login' exact component={Login} />
           <Route path='/admin' component={AdminPage}/>
           <Route path='/404' exact component={NoFound} />
-          <Route path='/401' exact component={NoAuth} />
+          <Route path='/400' exact component={ServerError} />
           <Redirect to='/404'/>
           {/* Private Route soon */}
       </Switch>

@@ -1,4 +1,4 @@
-let User = require("../models/users");
+  let User = require("../models/users");
 
 const create = (req, res) => {
   console.log(req.body)
@@ -7,7 +7,7 @@ const create = (req, res) => {
     password: req.body.password,
     name: req.body.name,
     photo: req.body.photo,
-    role: req.body.role,
+    role: req.body.role || "user",
     status: true,
     review: [],
     news: [],
@@ -17,7 +17,7 @@ const create = (req, res) => {
 
   newUser
     .save()
-    .then(() => res.json("User added!"))
+    .then(() => res.status(201).json("User added!"))
     .catch((err) => console.log(err));
 };
 
@@ -30,6 +30,17 @@ const getAll = (req, res) => {
 const getById = (req, res) => {
   User.findById(req.params.id)
     .then((user) => res.json(user))
+    .catch((err) => res.status(400).json("Error: " + err));
+};
+
+const clientgetByID = (req, res) => {
+  User.findById(req.params.id)
+    .then((user) => {
+      res.json({
+        name: user.name,
+        poster: user.photo
+      })
+    })
     .catch((err) => res.status(400).json("Error: " + err));
 };
 
@@ -79,5 +90,5 @@ module.exports = {
   getById,
   updateById,
   deleteById,
-  adminUpdateById,
+  adminUpdateById,clientgetByID
 };
