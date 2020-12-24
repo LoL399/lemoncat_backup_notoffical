@@ -25,20 +25,22 @@ const getAll = (req, res) => {
 };
 
 const getById = (req, res) => {
-  News.findById(req.params.id).populate("byUser", "name")
+  News.findById(req.params.id).populate("byUser", "name").populate("comment.comment", "byUser content createdAt")
     .then((news) => res.json(news))
     .catch((err) => res.status(400).json("Error: " + err));
 };
 
 const updateById = (req, res) => {
+  console.log(req.body.comment)
   News.findById(req.params.id)
     .then((news) => {
       news.name = req.body.name;
       news.content = req.body.content;
       news.category = req.body.category;
       news.tag = req.body.tag;
+      news.comment = req.body.comment;
 
-      movie
+      news
         .save()
         .then(() => res.json("Movie updated!"))
         .catch((err) => res.status(400).json("Error: " + err));
@@ -65,7 +67,8 @@ const adminUpdateById = (req, res) => {
       news.active = req.body.active;
       news.tag = req.body.tag;
       news.hot = req.body.hot;
-      news.poster = req.body.poster
+      news.poster = req.body.poster;
+      news.comment = req.body.comment;
 
       news
         .save()

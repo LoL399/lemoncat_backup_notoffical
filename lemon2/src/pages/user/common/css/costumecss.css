@@ -79,6 +79,23 @@ body,html,#root{
   max-height: 200px;
   overflow: hidden;
 }
+
+.reviewReadmore
+{
+  height: 200px;
+  max-height: 500px;
+  overflow: hidden;
+}
+.slideshow{
+  height:500px;
+  width:auto;/*maintain aspect ratio*/
+  max-width:600px;
+}
+.imgCard{
+  height:250px;
+  width:auto;/*maintain aspect ratio*/
+  max-width:250px;
+}
 .avatar {
   vertical-align: middle;
   width: 100px;

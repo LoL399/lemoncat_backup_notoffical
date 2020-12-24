@@ -10,6 +10,7 @@ const jwtcheck = require("../../auth/auth")
 router.post("/login", login.login);
 router.post("/reset-password", login.sendPasswordToMail);
 router.post("/signin", login.signIn);
+router.get("/userData/:id", login.getUserData);
 router.get("/getInfo", jwtcheck.authenticateUser , login.getInfo);
 router.post("/userupdate", jwtcheck.authenticateUser , login.updateByUser);
 router.post("/updatePass", jwtcheck.authenticateUser , login.updatePass);
@@ -24,7 +25,7 @@ router.post("/reviews/create", reviews.create);
 router.get("/reviews/get", reviews.getAll);
 router.get("/reviews/get-by-id/:id", reviews.getById);
 router.get("/reviews/get-by-movie/:id", reviews.getByMovie);
-router.put("/reviews/update/:id", reviews.updateById);
+router.post("/reviews/update/:id", reviews.updateById);
 router.delete("/reviews/delete/:id", reviews.deleteById);
 
 
@@ -35,7 +36,7 @@ router.get("/news/search/:search", news.searchByName);
 router.get("/news/getNewest", news.getNewest);
 router.get("/news/getActive/:page", news.getAllActive);
 router.get("/news/get-by-id/:id", news.getById);
-router.put("/news/update/:id", news.updateById);
+router.post("/news/update/:id", news.updateById);
 router.delete("/news/delete/:id", news.deleteById);
 router.get("/news/search/:search", news.searchByName);
 

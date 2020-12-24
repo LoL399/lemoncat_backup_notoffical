@@ -44,6 +44,11 @@ const updateByUser = (req, res) => {
   }).catch((err) => res.status(400).json("Error: " + err));
 }
 
+const getUserData=(req, res)=>{
+  const id = req.params.id
+  User.findById(id).select("name photo").then((user) => res.status(200).json(user)).catch((err) => res.status(400).json("Error: " + err));
+
+}
 
 
 
@@ -160,4 +165,4 @@ const signIn = (req, res) => {
     .catch((err) => res.status(400).json("Error: " + err));
 };
 
-module.exports = { login, sendPasswordToMail, signIn, getInfo, updateByUser,updatePass};
+module.exports = { login, sendPasswordToMail, signIn, getInfo, updateByUser,updatePass, getUserData};

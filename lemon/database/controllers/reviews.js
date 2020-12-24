@@ -22,13 +22,12 @@ const create = (req, res) => {
 
 const getAll = (req, res) => {
   // console.log("here")
-  Review.find()
-    .then((reviews) => res.json(reviews))
+  Review.find().populate("comment.comment", "content byUser")
     .catch((err) => res.status(400).json("Error: " + err));
 };
 
 const getByMovie= (req, res) => {
-  Review.find({forMovie: req.params.id, active: true}).populate("byUser","name photo")
+  Review.find({forMovie: req.params.id, active: true}).populate("byUser","name photo").populate("comment.comment", "content byUser createAt")
   .then((reviews) => {res.json(reviews)})
   .catch((err) => res.status(400).json("Error: " + err));
 }
@@ -40,6 +39,7 @@ const getById = (req, res) => {
 };
 
 const updateById = (req, res) => {
+  console.log(req.body.like)
   Review.findById(req.params.id)
     .then((review) => {
       review.name = req.body.name;
@@ -47,6 +47,8 @@ const updateById = (req, res) => {
       review.forMovie = req.body.forMovie;
       review.userScore = req.body.userScore;
       review.tag = req.body.tag;
+      review.comment = req.body.comment;
+      review.like = req.body.like
       review
         .save()
         .then(() => res.json("review updated!"))

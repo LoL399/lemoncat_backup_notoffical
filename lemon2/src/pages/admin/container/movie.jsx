@@ -423,8 +423,8 @@ class MoviesDetails extends Component {
 
     }
     else
-    this.setState({[event.target.name]: event.target.value});
-    console.log(this.state,[event.target.name])
+    this.setState({[event.target.name]: event.target.value},()=>    console.log(this.state,[event.target.name])
+    );
 
 		// this.validateForm();
   }

@@ -6,7 +6,7 @@ import Wait from '../../Other/LoadingScreen';
 import MovieItem from './MovieItem';
 
 const genersOption = [{name:"Hành động",value:"Action"},{name:"Hài kịch",value:"Comedy"},{name:"Kịch",value:"Dramma"}
-,{name:"Kinh dị",value:"Horro"},{name:"Tình cảm",value:"Romance"},{name:"Kinh dị - hành động",value:"Thriller"},{name:"Viễn tưởng",value:"Fantasy"}]
+,{name:"Kinh dị",value:"Horror"},{name:"Tình cảm",value:"Romance"},{name:"Kinh dị - hành động",value:"Thriller"},{name:"Viễn tưởng",value:"Fantasy"}]
 
 class MovieCatalog extends Component {
 	state = { listMovie: {}, page: 1, genre: "" }
@@ -62,8 +62,7 @@ class MovieCatalog extends Component {
 			}
 			else
 			{
-				const data = {genres : this.state.genre};
-				movieservice.searchByGenres(1,data).then(res => this.setState({listMovie: res.data}))
+				movieservice.searchByGenres(1,{genres : this.state.genre}).then(res => this.setState({listMovie: res.data}))
 
 			}
 

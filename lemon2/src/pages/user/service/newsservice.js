@@ -1,3 +1,4 @@
+import { data } from "jquery";
 import api from "./api"
 
 const list = page => {              
@@ -12,7 +13,7 @@ const listNew= () => {
 };
 const getOne = (id) => api.get(`${api.url.news}/get-by-id/${id}`); 
 
-
+const update = (id,data) => api.post(`${api.url.news}/update/${id}`,data)
 
 const searchFor = (search) => api.get(`${api.url.news}/search/${search}`)
 export default {
@@ -20,5 +21,6 @@ export default {
     listHot: listHot,
     listNew: listNew,
     getOne: getOne,
-    searchFor: searchFor
+    searchFor: searchFor,
+    update: update
 };

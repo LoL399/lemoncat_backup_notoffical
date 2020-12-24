@@ -203,6 +203,9 @@ class InfoChange extends Component {
       console.log(data)
       userservice.updateByUser(data).then((res) => {
         window.location.reload();
+        localStorage.setItem('personId', this.props.userInfo._id);
+        localStorage.setItem('name', this.state.name);
+        localStorage.setItem('avatar',  this.state.photo);
       }).catch(err => alert(err))
 
     }
@@ -287,7 +290,6 @@ class PassChange extends Component {
             oldPass: this.state.oldPass,
             newPass: this.state.newPass
           }
-
           userservice.updatePass(data).then(res => {
             res.data.right === false ? this.setState({message:"Mật khẩu cũ sai, xin hãy kiểm tra lại thông tin"}) : window.location.reload();
           })

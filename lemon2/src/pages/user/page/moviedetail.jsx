@@ -7,20 +7,21 @@ import bg from '../common/images/home-home__bg.jpg'
 import movieservice from '../service/movieservice';
 import Wait from '../../Other/LoadingScreen';
 import { Link } from 'react-router-dom';
-import reviewservice from '../../admin/service/reviewservice';
+
 import userservice from '../service/userservice';
+import Dialog from 'react-bootstrap-dialog';
 import { Next } from 'react-bootstrap/esm/PageItem';
+import commentservice from '../service/commentservice';
+import reviewservice from '../service/reviewservice'
 
 class MovieDetail extends Component {
 	state = {  readMore: false, movieInfo: null }
 	componentDidMount(){
 		movieservice.getOne(this.props.match.params.id).then(res=> 
 			{
-				this.setState({movieInfo: res.data},  () => console.log(res.data));
+				this.setState({movieInfo: res.data},()=>{console.log(res.data)});
 			}
 			).catch((err)=>alert(`Toang rồi đại ca, mạng mất hoặc server có vấn đề. Chi tiết: \n ${err}`))
-			
-
 		// console.log(this.props.match.params.id)
 
 	}
@@ -39,7 +40,8 @@ class MovieDetail extends Component {
 				<div className="detail__bg gbMovie">
 
 				</div>
-				{this.state.movieInfo===null? <div className="d-block mx-auto container"><Wait/></div>:
+				
+				{this.state.movieInfo === null ? <div className="d-block mx-auto container"><Wait/></div>:
 
                 <div className="container">
 
@@ -89,7 +91,7 @@ class MovieDetail extends Component {
 									<div className="col-12 col-xl-12 col-sm-12 ">
 
 									<ul className="card__meta">
-										<li><span>Genre:</span> 
+										<li><span className="font-weight-bold">Thể loại:</span> 
 										{this.state.movieInfo.genres.map((genre,idx)=>{
 											return(
 												<Link>{genre}</Link>
@@ -99,8 +101,8 @@ class MovieDetail extends Component {
 										</li>
 										{/* <li><span>Release year:</span> 2017</li>
 										<li><span>Running time:</span> 120 min</li> */}
-										<li><span>Đạo diễn: </span> {this.state.movieInfo.director.name}</li>
-										<li><span>Tác giả:</span> {this.state.movieInfo.writer.name}</li>
+										<li><span className="font-weight-bold">Đạo diễn: </span> {this.state.movieInfo.director.name}</li>
+										<li><span className="font-weight-bold">Tác giả:</span> {this.state.movieInfo.writer.name}</li>
 										{/* <div class="details__devices">
 											<span class="details__devices-title">Available on devices:</span>
 											<ul class="details__devices-list">
@@ -116,9 +118,9 @@ class MovieDetail extends Component {
 									</div>
 
 
-									<h2 className="card__rate mt-5">Tóm tắt phim: </h2>
-									<p className="text-light">( Có thể sẽ có lộ 1 tí cốt truyện của bộ phim)</p>
-									<div className="b-description_readmore_wrapper js-description_readmore_wrapper" ><div className={ this.state.readMore === false ? "card__description card__description--details b-description_readmore_ellipsis detailReadmore":"card__description card__description--details b-description_readmore_ellipsis" }  >
+									<h2 className="card__rate mt-5 font-weight-bold">Tóm tắt phim: </h2>
+									<p className="text-light font-italic">( Có thể sẽ có lộ 1 tí cốt truyện của bộ phim)</p>
+									<div className="b-description_readmore_wrapper js-description_readmore_wrapper" ><div className={ this.state.readMore === false ? "card__description card__description--details b-description_readmore_ellipsis detailReadmore text-justify":"card__description card__description--details b-description_readmore_ellipsis text-justify" }  >
 										
 										{this.state.movieInfo.summary }
 									</div>
@@ -193,20 +195,18 @@ class MovieDetail extends Component {
 							</div> */}
 							<div className="tab-pane fade active show " id="tab-2" role="tabpanel" aria-labelledby="2-tab">
 							{/* Hey listen */}
-								<ReviewArea id={this.props.match.params.id}/>
+							{this.state.movieInfo === null ? null : 	
+							<ReviewArea id={this.props.match.params.id}/>
+}
 							</div>
 							<div className="tab-pane fade " id="tab-3" role="tabpanel" aria-labelledby="3-tab">
 							{/* Hey listen */}
-								{
-									// this.state.movieInfo.photo ? <PhotoList /> :
-									// <div>
-									// 	<h1 className="details__title ">Không có hình ảnh thêm</h1>
-									// </div>
-								}
+							{this.state.movieInfo === null ? null : <PhotoList photoList={this.state.movieInfo.images}/>}
 							</div>
 							<div className="tab-pane fade " id="tab-4" role="tabpanel" aria-labelledby="4-tab">
 							{/* Hey listen */}
-								<PersonInvol casts={this.state.movieInfo} />
+							{this.state.movieInfo === null ? null : 
+								<PersonInvol movie={this.state.movieInfo} />}
 							</div>
 				
 						</div>
@@ -246,71 +246,207 @@ class MovieDetail extends Component {
 }
 
 class CommentArea extends Component {
-	state = { logIn: this.props.login }
-	render() { 
-		return ( 							
-		<div className="row">
-		<div className="comments">
-			{/* Hey listen */}
-			<ul className="comments__list">
-					<li className="comments__item">
-						<div className="comments__autor">
-							<img className="comments__avatar" src={cover} alt=""/>
-							<span className="comments__name">John Doe</span>
-							<span className="comments__time">30.08.2018, 17:53</span>
-						</div>
-						<p className="comments__text">There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the middle of text.</p>
-						<div className="comments__actions">
+	state = { isLogin: false, listComment: null, content: "" }
 
-							<button type="button"><i className="icon ion-ios-trash"></i>Xóa</button>
+	componentDidMount(){
+		this.loadData();
 
-						</div>
-					</li>
-					<li className="comments__item">
-						<div className="comments__autor">
-							<img className="comments__avatar" src="images/img-user.svg" alt=""/>
-							<span className="comments__name">John Doe</span>
-							<span className="comments__time">30.08.2018, 17:53</span>
-						</div>
-						<p className="comments__text">There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the middle of text.</p>
+	}
 
-					</li>
+	loadData(){
 
-					
-				</ul>
+		userservice.getInfo().then(()=>{
+			this.setState({isLogin: true})
+		}).catch(()=>{this.setState({isLogin: false})})
+		this.setState({listComment: this.props.review},()=>console.log(this.state.listComment.comment))
+	}
+
+	repopulateState(comment){
+		const index = this.state.listComment.comment.findIndex((element)=>{return element._id == comment._id}) 
+		let item = this.state.listComment;
+		item.comment[index] = comment;
+		this.setState({listComment: item},()=>reviewservice.update(this.state.listComment._id,this.state.listComment).then(res => console.log(res)
+		).catch(err => console.log(err)))
+
+	}
+	removeConfirm=comment=>{
+		this.dialog.show({
+		  title: 'Xác nhận',
+		  body: 'Bạn có muốn xóa bài bình luận ?',
+		  actions: [
+			Dialog.CancelAction(),
+			Dialog.OKAction(() => {
+				let item = this.state.listComment;
+				item.comment.pop((e)=> {return e._id=== comment._id}) 
+				this.setState({listComment: item},()=>reviewservice.update(this.state.listComment._id,this.state.listComment).then(res => console.log(res)
+				).catch(err => console.log(err)))
+				
+				// let item = this.state.listComment;
+				// item.comment[index] = comment;
+				// this.setState({listComment: item},()=>reviewservice.update(this.state.listComment._id,this.state.listComment).then(res => console.log(res)
+				// ).catch(err => console.log(err)))
+
+			})
+		  ],
+		  bsSize: 'small',
+		  onHide: (dialog) => {
+			dialog.hide()
+			console.log('closed by clicking background.')
+		  }
+		})
+		
+	  }
+
+	checkLike(comment){
+		if(this.state.isLogin)
+		{
+			console.log("Hi",comment)
+			
+			if(comment.like.length == 0){
+				console.log("Empty")
+				comment.like.push(localStorage.getItem('personId'))
+				this.repopulateState(comment)
+				console.log(comment.like)
+	
+				return ;
+			}
+			if( comment.like.indexOf(localStorage.getItem('personId'))>= 0)
+			{
+				console.log("Already", comment.like.indexOf(localStorage.getItem('personId')))
+				comment.like.pop(localStorage.getItem('personId'))
+				console.log(comment.like)
+				this.repopulateState(comment)
+				// reviewservice.update(review._id,review).then(res => this.repopulateState(review)
+				// ).catch(err => console.log(err))
+				return ;
+			}
+			else
+			{
+				comment.like.push(localStorage.getItem('personId'))
+				console.log(comment.like)
+				this.repopulateState(comment)
+				// reviewservice.update(review._id,review).then(res => this.repopulateState(review)
+				// ).catch(err => console.log(err))
+				return ;
+			}
+	
+		}
+	}
+
+	submit(){
+		if(this.state.content !== "" ) 
+		{
+			const data = {
+				byUser: localStorage.getItem("personId"),
+				content: this.state.content
+			}
+			console.log(data);
+			commentservice.add(data).then(res =>{
+				let commentlist = this.state.listComment
+				let comment = {
+					comment: res.data,
+					like: [], 
+					subComment: []
+				}
+				
+				if(commentlist.comment.length==0)
 				{
-					this.state.logIn === true ? 				
-					<form action="#" className="form">
-					<textarea id="text" name="text" className="form__textarea" placeholder="Bình luận ..."></textarea>
-					<button type="button" className="form__btn">Đăng</button>
-					</form>
-					:
-					<button className="sign__btn" type="button">Đăng nhập để có thể bình luận</button>
+					commentlist.push(comment)
+					reviewservice.update(commentlist._id,commentlist ).then(res => {window.location.reload(0)})
+				}
+				else
+				{
+					commentlist.comment.push(comment)
+					reviewservice.update(commentlist._id,commentlist ).then(res => {window.location.reload(0)})
+				}
+				
+			})
+
+
+			console.log(this.state.listComment)
+
+		}
+	}
+
+
+	render() { 
+		return ( 	
+			<li class="comments__item comments__item--quote border-left border-light">
+				{
+					this.state.isLogin === true ? <div class="header__search-content homecolor p-3 mb-5 ">
+					<img src={localStorage.getItem("avatar")} className="reviews__avatar ml-3"/>
+					<input type="text" className="ml-5 border-bottom border-light" placeholder=" Viết bình luận..." value={this.state.content} onChange={(e)=>{  this.setState({content: e.target.value})}}/>
+					<button type="button" onClick={async ()=> await this.submit()}>Đăng</button>
+					</div>: null
+				}
+				{
+					this.state.listComment === null ? <h1>Wait...</h1> : this.state.listComment.comment.map((comment)=>{
+						return (
+							<div className="ml-3">
+							<CommentItem comment={comment}/>
+							<div class="comments__actions">
+								<div class="comments__rate">
+									<button type="button" onClick={()=>this.checkLike(comment)}><i class="icon ion-md-thumbs-up"></i>{comment.like.length}</button>
+								</div>
+								{comment.comment.byUser === localStorage.getItem('personId')	 ? <button type="button" onClick={()=>this.removeConfirm()}><i class="icon ion-ios-bin" ></i>Xóa</button> : null}
+							</div>
+							<Dialog ref={(el) => { this.dialog = el }} />
+						</div>
+						)
+					})
 
 				}
 
-		</div>
+			
 
-	</div> );
+
+			</li>
+		 );
 	}
 }
 
+class CommentItem extends Component {
+	state = { name: "", photo: "" }
+
+	componentDidMount(){
+		userservice.getUserInfo(this.props.comment.comment.byUser).then(res => {this.setState({name: res.data.name, photo: res.data.photo})})
+	}
+
+
+	
+	render() { 
+		return ( 
+			<div>
+			<div class="comments__autor">
+				<img class="comments__avatar" src={this.state.photo} alt=""/>
+				<span class="comments__name">{this.state.name}</span>
+			</div>
+			
+			<p class="comments__text">{this.props.comment.comment.content}</p>
+			</div>
+ );
+	}
+}
+
+
 class ReviewArea extends Component {
 
-	state={reviewList: null, isLogin: false, userId: "", name: "", content: "", starNumber: -1, already: false }
+	state={reviewList: null, isLogin: false, userId: "", name: "", content: "", starNumber: -1, already: false, readMore: false, message: "Đọc thêm" }
+	readMoreBtn(){
+		this.state.readMore === false ? this.setState({readMore: true, message: "Thu gọn"}) : this.setState({readMore: false,message: "Đọc thêm"  })
+	}
 
 	componentDidMount(){
 		this.loadData();
 
 	}
 	loadData(){
-		let arr = []
-		reviewservice.getByMovie(this.props.id).then(res => {
-				this.setState({reviewList: res.data,});
+		reviewservice.getByMovie(this.props.id).then(res => {console.log(res.data)
+				this.setState({reviewList: res.data});
 				userservice.getInfo().then((res) => {
 					if(res.data && res.data !=null)
 					{
-						this.setState({userId: res.data._id}, ()=>console.log(this.state.userId));
+						this.setState({userId: res.data._id});
 						this.setState({isLogin: true})
 						this.state.reviewList.forEach(element => {
 							if(element.byUser._id === res.data._id)
@@ -323,7 +459,6 @@ class ReviewArea extends Component {
 					}
 				}).catch(()=> this.setState({isLogin: false}))
 		})
-		console.log(this.props.isLogin) 
 
 	}
 
@@ -345,59 +480,121 @@ class ReviewArea extends Component {
 				content: this.state.content,
 				byUser: this.state.userId,
 				forMovie: this.props.id,
-				userScore: this.state.starNumber
+				userScore: this.state.starNumber,
 
 			}
 			console.log(data)
-			// reviewservice.add(data).then(res => console.log(res))
+			reviewservice.add(data).then(res => {
+				window.location.reload(0);
+
+			})
 		}
 
 	}
+	
+	removeConfirm=review=>{
+		this.dialog.show({
+		  title: 'Xác nhận',
+		  body: 'Bạn có muốn xóa bài đánh giá ?',
+		  actions: [
+			Dialog.CancelAction(),
+			Dialog.OKAction(() => {
+			  review.active = !review.active;
+			  console.log(review)
+			  reviewservice.update(review._id,review).then(() => { 
+				  // console.log(res)         
+				window.location.reload();
+				}).catch(err => console.log(err))
+			})
+		  ],
+		  bsSize: 'small',
+		  onHide: (dialog) => {
+			dialog.hide()
+			console.log('closed by clicking background.')
+		  }
+		})
+		
+	  }
+	repopulateState(review){
+		const index = this.state.reviewList.findIndex((element)=>{return element._id == review._id}) 
+		let item = this.state.reviewList;
+		item[index] = review;
+		this.setState({reviewList: item})
 
-
-
+	}
+	checkLike(review){
+		if(this.state.isLogin)
+		{
+			if(review.like.length == 0){
+				console.log("Empty")
+				review.like.push(localStorage.getItem('personId'))
+				reviewservice.update(review._id,review).then(res => this.repopulateState(review)
+				).catch(err => console.log(err))
+				console.log(review.like)
+	
+				return ;
+			}
+			if( review.like.indexOf(localStorage.getItem('personId'))>= 0)
+			{
+				console.log("Already", review.like.indexOf(localStorage.getItem('personId')))
+				review.like.pop(localStorage.getItem('personId'))
+				reviewservice.update(review._id,review).then(res => this.repopulateState(review)
+				).catch(err => console.log(err))
+				return ;
+			}
+			else
+			{
+				review.like.push(localStorage.getItem('personId'))
+				reviewservice.update(review._id,review).then(res => this.repopulateState(review)
+				).catch(err => console.log(err))
+				return ;
+			}
+	
+		}
+	}
+	
 	render() { 
 		return ( 							
 		<div className="row">
 
 		<div className="col-12">
-
-			
-		<div className="reviews">
-					{this.state.isLogin === true ?	
-
-					<div>
-						{this.state.already === true ? <button className="sign__btn" type="button">
-							Bạn đã đánh giá rồi! Xin cảm ơn bạn dã để lại ý kiến
-						</button>
-						:<div className="form">
-							<input type="text" className="form__input" placeholder="Tựa đề bài đánh giá" name="name" onChange={this.handleChange} required/>
-							<textarea className="form__textarea" placeholder="Đánh giá"  name="content" onChange={this.handleChange} required></textarea>
-							<div className="form__slider">
-							<Rating
-								name="simple-controlled"
-								value={this.state.starNumber}
-								max={10}
-								onChange={this.handleRatingChange}
-								// onChangeActive={(event, newHover) => {
-								//   setHover(newHover);
-								// }}
-								/>
-							{this.state.starNumber < 0 ? <span className="text-danger font-italic">Xin hãy cho điểm trước khi đăng nhé</span> : null}
-							</div>
-							<button type="button" className="form__btn" onClick={()=>this.submit()}>Đăng</button>
-						</div>}
-					</div>
-
-					: <Link to="/home/login" className="sign__btn" type="button">Đăng nhập để có thể đánh giá</Link>
-					}
-
-
-					</div>
+		<div className="b-description_readmore_wrapper js-description_readmore_wrapper" ><div className={ this.state.readMore === false ? "card__description card__description--details b-description_readmore_ellipsis reviewReadmore":"card__description card__description--details b-description_readmore_ellipsis" }  >
 
 			<div className="reviews">
-				
+						{this.state.isLogin === true ?	
 
+						<div>
+							{this.state.already === true ? <button className="sign__btn" type="button">
+								Bạn đã đánh giá rồi! Xin cảm ơn bạn dã để lại ý kiến
+							</button>
+							:<div className="form">
+								<input type="text" className="form__input" placeholder="Tựa đề bài đánh giá" name="name" onChange={this.handleChange} required/>
+								<textarea className="form__textarea" placeholder="Đánh giá"  name="content" onChange={this.handleChange} required></textarea>
+								<div className="form__slider">
+								<Rating
+									name="simple-controlled"
+									value={this.state.starNumber}
+									max={10}
+									onChange={this.handleRatingChange}
+									// onChangeActive={(event, newHover) => {
+									//   setHover(newHover);
+									// }}
+									/>
+								{this.state.starNumber < 0 ? <span className="text-danger font-italic">Xin hãy cho điểm trước khi đăng nhé</span> : null}
+								</div>
+								<button type="button" className="form__btn" onClick={()=>this.submit()}>Đăng</button>
+							</div>}
+						</div>
+
+						: <Link to="/home/login" className="sign__btn" type="button">Đăng nhập để có thể đánh giá</Link>
+						}
+
+
+						</div>
+
+				<div className="reviews">
+									
+			
 				{this.state.reviewList===null? <div className="d-block mx-auto container"><Wait/></div>:
 				<div>
 					{this.state.reviewList.map((review)=>{
@@ -423,32 +620,32 @@ class ReviewArea extends Component {
 						<span className="reviews__rating"><i className="icon ion-ios-star"></i>{review.userScore}</span>
 					</div>
 					<p className="reviews__text">{review.content}.</p>
+
 				</li>
 				<div class="comments__actions">
-				{review.byUser === localStorage.getItem('personId')	 ? <button type="button"><i class="icon ion-ios-bin"></i>Xóa</button> : null}
+				<div class="comments__rate">
+						<button type="button" onClick={()=>this.checkLike(review)}><i class="icon ion-md-thumbs-up"></i>{review.like.length}</button>
+					</div>
+				{review.byUser._id === localStorage.getItem('personId')	 ? <button type="button" onClick={()=>this.removeConfirm(review)}><i class="icon ion-ios-bin" ></i>Xóa</button> : null}
 				<button type="button"><i class="icon ion-ios-share-alt"></i>Phản hồi</button>
 
 				</div>
-				{/* Reply */}
-				{/* <li class="comments__item comments__item--answer">
-					<div class="comments__autor">
-						<img class="comments__avatar" src="images/img-user.svg" alt=""/>
-						<span class="comments__name">John Doe</span>
-						<span class="comments__time">24.08.2018, 16:41</span>
-					</div>
-					<p class="comments__text">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
-					<div class="comments__actions">
+				<CommentArea review={review}/>
 
-						<button type="button"><i class="icon ion-ios-share-alt"></i>Xóa</button>
-					</div>
-				</li> */}
 
 				</ul>
 						)
 					})}
+					<Dialog ref={(el) => { this.dialog = el }} />
 				</div>
 				}
 			
+
+		</div>
+		</div>
+
+		<div className="b-description_readmore_button" onClick={()=>this.readMoreBtn()}></div>
+		<h5 className= " text-light cardheader pointercursor text-center"  onClick={()=>this.readMoreBtn()}>{this.state.message}</h5> 
 
 		</div>
 		</div>
@@ -463,71 +660,121 @@ class  PhotoList extends Component {
 		return ( 
 			<div class="gallery" itemscope="" data-pswp-uid="1">
 				<div class="row">
+					{this.props.photoList.map((photo,idx)=>{
+						return(
+							<figure class="col-12 col-sm-6 col-xl-4" itemprop="associatedMedia" itemscope="">
+							<img src={photo} itemprop="thumbnail" alt="Image description"/>
+								<figcaption itemprop="caption description">Hình {idx}</figcaption>
+							</figure>
+						)
+						
 
-					<figure class="col-12 col-sm-6 col-xl-4" itemprop="associatedMedia" itemscope="">
-						<a href="images/gallery-project-1.jpg" itemprop="contentUrl" data-size="1920x1280">
-							<img src={cover} itemprop="thumbnail" alt="Image description"/>
-						</a>
-						<figcaption itemprop="caption description">Some image caption 1</figcaption>
-					</figure>
+
+					})}
+
 				</div>
 			</div>
 		 );
 	}
 }
 class PersonInvol extends Component {
-	state = { casts: [], director: {}, writer: {} }
+	state = { casts: null, director: null, writer: null }
+
+	componentDidMount(){
+		this.loadData();
+	}
+
+
+	loadData()
+	{
+		this.setState({casts: this.props.movie.casts})
+		this.setState({director: this.props.movie.director})
+		this.setState({writer: this.props.movie.writer})
+	}
+
+
 	render() { 
 		return ( 
 			<div className="container">
 				<h4 className="content__title">Diễn viên tham gia</h4>
-				<div className="row">
-				
-				<div class="col-sm-6">
-                <div class="card homecolor border-0 mr-2">
-                <div class="row">
-                    <div class=" col-sm-6">
-                        <img src={cover} className="img-thumbnail mx-auto d-block w-75 h-75"/>
-                        
-                    </div>
-                    <div class=" col-sm-6">  
-                    <div class="card-body">
-                       
-                        <div className=" text-light" >
-                            It is a long established fact that a reader.
-                        </div>
-                        <small className="text-light">09/09/2020</small>
-                    </div>
-                    </div>
- 
-                    </div>
-                </div>
-            	</div>
 
-			</div>
-			<h4 className="content__title">Đạo diễn</h4>
-			<div className="row">
+				{this.state.casts === null ? <div className="d-block mx-auto container"><Wait/></div>: 
+					<div className="row">
+						{this.state.casts.map((cast,idx)=>{
+							return(
+								<div class="col-sm-6">
+								<div class="card homecolor border-0 mr-2">
+								<div class="row">
+									<div class=" col-sm-6">
+										<img src={cast.person.poster} className="img-thumbnail mx-auto d-block"/>
+										
+									</div>
+									<div class=" col-sm-6">  
+									<div class="card-body">
+									
+										<div className=" text-light" >
+											{cast.person.name}
+										</div>
+										<small className="text-light">Trong vai: {cast.characterName}</small>
+									</div>
+									</div>
 				
-				<div class="col-sm-6">
-                <div class="card homecolor border-0 mr-2">
-                <div class="row">
-                    <div class=" col-sm-6">
-                        <img src={cover} className="img-thumbnail mx-auto d-block w-75 h-75"/>
-                        
-                    </div>
-                    <div class=" col-sm-6">  
-                    <div class="card-body">
-                       
-                        <div className="text-light" >
-                            It is a long established fact that a reader.
-                        </div>
-                        <small className="text-light">09/09/2020</small>
-                    </div>
-                    </div>
- 
-                    </div>
-                </div>
-            </div>
+									</div>
+								</div>
+								</div>
+							)
+								
+
+						})}
+
+				</div>}
+
+			<h4 className="content__title">Các nhân vật khác</h4>
+			<div className="row">
+				{this.state.director === null ? <div className="d-block mx-auto container"><Wait/></div> :
+								
+								<div class="col-sm-6">
+								<div class="card homecolor border-0 mr-2">
+								<div class="row">
+									<div class=" col-sm-6">
+										<img src={this.state.director.poster} className="img-thumbnail mx-auto d-block"/>
+										
+									</div>
+									<div class=" col-sm-6">  
+									<div class="card-body">
+									   
+										<div className="text-light" >
+											{this.state.director.name}
+										</div>
+									</div>
+									</div>
+				 
+									</div>
+								</div>
+							</div>}
+						{this.state.writer === null ? <div className="d-block mx-auto container"><Wait/></div> :
+							
+							<div class="col-sm-6">
+							<div class="card homecolor border-0 mr-2">
+							<div class="row">
+								<div class=" col-sm-6">
+									<img src={this.state.writer.poster} className="img-thumbnail mx-auto d-block"/>
+									
+								</div>
+								<div class=" col-sm-6">  
+								<div class="card-body">
+									
+									<div className="text-light" >
+										{this.state.writer.name}
+									</div>
+								</div>
+								</div>
+				
+								</div>
+							</div>
+						</div>}
+
+
 			</div>
 			</div>
 		 );

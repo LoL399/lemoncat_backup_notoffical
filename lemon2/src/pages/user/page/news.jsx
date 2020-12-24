@@ -4,6 +4,7 @@ import newsservice from '../service/newsservice';
 import renderHTML from 'react-render-html';
 import Wait from '../../Other/LoadingScreen';
 import userservice from '../service/userservice';
+import commentservice from '../service/commentservice';
 class NewsDetail extends Component {
 	state = { isLogin: true, newsInfo: null, date: "" }
 
@@ -63,7 +64,10 @@ class NewsDetail extends Component {
                             </div>
 					</div>}
                             <hr className="newshr"/>
-                            <CommentNews/>
+							{
+								this.state.newsInfo === null ? null : <CommentNews newsInfo={this.state.newsInfo}/>
+							}
+                            
 
                         </div>
                         <div className="col-12 col-lg-3 col-xl-3 ">
@@ -159,55 +163,111 @@ class NewsSection extends Component {
 
 
 class CommentNews extends Component {
-	state = { logIn: true }
+	state = { logIn: true, newsInfo: null, content: "" }
+
+	componentDidMount(){
+		userservice.getInfo().then(()=>{
+			this.setState({logIn: true})
+		}).catch(()=>{this.setState({logIn: false})})
+		this.setState({newsInfo: this.props.newsInfo})
+	}
+	
+
+	submit(){
+		if(this.state.content !== "" && this.state.logIn ) 
+		{
+			const data = {
+				byUser: localStorage.getItem("personId"),
+				content: this.state.content
+			}
+			console.log(data);
+			commentservice.add(data).then(res =>{
+				let commentlist = this.state.newsInfo
+				let comment = {
+					comment: res.data,
+					like: [], 
+					subComment: []
+				}
+					commentlist.comment.push(comment)
+					newsservice.update(commentlist._id,commentlist ).then(res => {window.location.reload(0)})
+			})
+
+
+		}
+	}
+
 	render() { 
 		return ( 							
 		<div className="ml-1 p-3">
             <h4 className="text-light mb-3">Bình luận</h4>
 		<div className="comments">
 			{/* Hey listen */}
-			<ul className="comments__list">
-					<li className="comments__item">
-						<div className="comments__autor">
-							<img className="comments__avatar" src={cover} alt=""/>
-							<span className="comments__name">John Doe</span>
-							<span className="comments__time">30.08.2018, 17:53</span>
-						</div>
-						<p className="comments__text">There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the middle of text.</p>
-						<div className="comments__actions">
 
-							<button type="button"><i className="icon ion-ios-trash"></i>Xóa</button>
-						</div>
-					</li>
-					<li className="comments__item">
-						<div className="comments__autor">
-							<img className="comments__avatar" src="images/img-user.svg" alt=""/>
-							<span className="comments__name">John Doe</span>
-							<span className="comments__time">30.08.2018, 17:53</span>
-						</div>
-						<p className="comments__text">There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the middle of text.</p>
-						<div className="comments__actions">
-						</div>
-					</li>
-
-					
-				</ul>
 				{
 					this.state.logIn === true ? 				
-					<form action="#" className="form">
-					<textarea id="text" name="text" className="form__textarea" placeholder="Bình luận ..."></textarea>
-					<button type="button" className="form__btn">Đăng</button>
-					</form>
+					<div className="form">
+					<textarea id="text" name="text" className="form__textarea" placeholder="Bình luận ..." onChange={(e)=>{  this.setState({content: e.target.value},()=>{console.log(e.target.value)})}}>{this.state.content}</textarea>
+					<button type="button" className="form__btn" onClick={()=>this.submit()}>Đăng</button>
+					</div>
 					:
 					<button className="sign__btn" type="button">Đăng nhập để có thể bình luận</button>
 
 				}
 
 		</div>
+		{this.state.newsInfo === null ? null :		
+		<ul className="comments__list">
+			{this.state.newsInfo.comment.map((comment)=>{
+				return(
+					<li className="comments__item">
+						<CommentItem comment={comment}/>
+				</li>
+				)
+
+			})}
+
+
+					
+		</ul> }
+
 
 	</div> );
 	}
 }
+class CommentItem extends Component {
+	state = { name: "", photo: "" }
+
+	componentDidMount(){
+		userservice.getUserInfo(this.props.comment.comment.byUser).then(res => {this.setState({name: res.data.name, photo: res.data.photo})})
+	}
+
+
+	
+	render() { 
+		let date = new Date(String(this.props.comment.comment.createdAt));
+		let year = date.getFullYear();
+		let month = date.getMonth()+1;
+		let dt = date.getDate();
+		if (dt < 10) {
+		dt = '0' + dt;
+		}
+		if (month < 10) {
+		month = '0' + month;
+		}
+		return ( 
+			<div>
+			<div class="comments__autor">
+				<img class="comments__avatar" src={this.state.photo} alt=""/>
+				<span class="comments__name">{this.state.name}</span>
+				<span className="comments__time">{dt+'/' + month + '/'+year}</span>
+			</div>
+			
+			<p class="comments__text">{this.props.comment.comment.content}</p>
+			</div>
+ );
+	}
+}
+
 
  
 export default NewsDetail;

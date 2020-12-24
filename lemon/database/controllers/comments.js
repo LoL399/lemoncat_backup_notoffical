@@ -10,7 +10,7 @@ const create = (req, res) => {
 
   newComment
     .save()
-    .then(() => res.json("Comment added!"))
+    .then((nComment) => res.json(nComment._id))
     .catch((err) => res.status(400).json("Error: " + err));
 };
 

@@ -4,11 +4,13 @@ import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
 import movieservice from '../service/movieservice';
 import Wait from '../../Other/LoadingScreen';
+import { Link } from 'react-router-dom';
 class MainPage extends Component {
 	state = { hotList: null, movieList: null, newsList: null }
 	
 	componentDidMount(){
 		this.loadData()
+
 	}
 
 	loadData(){
@@ -27,7 +29,22 @@ class MainPage extends Component {
 				<div class="col-12">
 					<h1 class="home__title">CHƯƠNG TRÌNH MỚI CỦA MÙA</h1>
 				</div>
-				{this.state.hotList===null? <div className="d-block mx-auto"><Wait/></div>:<MovieDeck list={this.state.hotList}/>}
+
+				{/* {this.state.hotList===null? <div className="d-block mx-auto"><Wait/></div>:<MovieDeck list={this.state.hotList}/>}
+				 */}
+				{this.state.hotList===null? <div className="d-block mx-auto"><Wait/></div>:	<div className="col-12">
+					<div className=" owl-carousel home__carousel owl-loaded">
+						
+						<div className="owl-stage-outer ">
+							<div className="owl-stage">
+							<CarouselManager list={this.state.hotList}/>
+							</div>
+
+
+						</div>
+						
+					</div>
+				</div>} 	
 		</div>
 	</div>
 	</section>
@@ -118,7 +135,7 @@ class MovieList extends Component {
 					<div className="row">
 						<div className="col-12 col-sm-4">
 							<div className="card__cover">
-								<img src={movie.poster} alt="poster"/><a href="#" className="card__play">
+								<img src={movie.poster} className="imgCard" alt="poster"/><a href="#" className="card__play">
 									<i className="icon ion-ios-play"></i>
 								</a>
 							</div>
@@ -126,7 +143,7 @@ class MovieList extends Component {
 	
 						<div className="col-12 col-sm-8">
 							<div className="card__content">
-								<h3 className="card__title cardheader"><a href="#">{movie.name}</a></h3>
+								<h3 className="card__title cardheader"><Link to={`/home/detail/${movie._id}`} href="#">{movie.name}</Link></h3>
 								<span className="card__category">
 									{movie.genres.map((genre,idx)=>{
 										return(
@@ -180,9 +197,10 @@ class MovieDeck extends Component {
 					return(					
 					<article className="card2">
 					<header className="border-0">
-						<a className="pointercursor"> <h4 className=" text-light cardheader">{movie.name}</h4></a>
+						<Link to={`/home/detail/${movie._id}`} className="pointercursor"> <h4 className=" text-light cardheader">{movie.name}</h4></Link>
 					</header>
-					<img  className="posterImg mt-3" src={movie.poster} alt="1"/>
+					<img  className="posterImg mt-3 " src={movie.poster} alt="1"/>
+
 		
 					</article>)
 
@@ -204,6 +222,59 @@ class MovieDeck extends Component {
 
 		</section>
 	 );
+	}
+}
+class  CarouselManager extends Component {
+	state = {  }
+	render() { 
+		const responsive = {
+			superLargeDesktop: {
+			  // the naming can be any, depends on you.
+			  breakpoint: { max: 4000, min: 3000 },
+			  items: 5
+			},
+			desktop: {
+			  breakpoint: { max: 3000, min: 1024 },
+			  items: 3
+			},
+			tablet: {
+			  breakpoint: { max: 1024, min: 464 },
+			  items: 2
+			},
+			mobile: {
+			  breakpoint: { max: 464, min: 0 },
+			  items: 1
+			}
+		  };
+		return ( 
+		<Carousel responsive={responsive} className="owl-stage">
+			{/* item */}
+			{this.props.list.map((movie,idx)=>{
+				if(movie.hot)
+				{
+				  return(
+					<div className="owl-item cloned owlSlide">
+					<div className="item">
+						<div className="card card--big homecolor border-0">
+							<div className="card__cover">
+								<img className="slideshow" src={movie.poster} alt="1" /><a href="#" className="card__play">
+									<i className="icon ion-ios-play"></i></a>
+							</div>
+							<div className="card__content text-center homecolor">
+							<Link to={`/home/detail/${movie._id}`} className="pointercursor"><h3 className="card__title">{movie.name}</h3></Link>
+								<span className="card__rate "><i className="icon ion-ios-star text-right"></i>4.4</span>
+							</div>
+						</div>
+	
+					</div>
+	
+				</div>
+				  )
+				}
+			})}
+
+
+			</Carousel> );
 	}
 }
 

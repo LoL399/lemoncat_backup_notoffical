@@ -31,7 +31,7 @@ const getAll = (req, res) => {
 };
 
 const getAllActive = (req, res) => {
-  let perPage = 8; // số lượng sản phẩm xuất hiện trên 1 page
+  let perPage = 12; // số lượng sản phẩm xuất hiện trên 1 page
   let page = req.params.page || 1 ; 
   let allItem = 0
   let allpage = 0
@@ -86,19 +86,19 @@ const getAllHot = (req, res) => {
 };
 
 const getNewest = (req,res) => {
-  Movie.find({status: true}).select("name poste genres").limit(6).then(data => res.json(data)).catch((err) => res.status(400).json("Error: " + err));
+  Movie.find({status: true, sort: { 'created_at' : -1 }} ).select("name poste genres").limit(6).then(data => res.json(data)).catch((err) => res.status(400).json("Error: " + err));
 }
 
 const getById = (req, res) => {
   console.log(req.params);
-  Movie.findById(req.params.id).populate("director", "name poster").populate("writer ", "name poster")
+  Movie.findById(req.params.id).populate("director", "name poster").populate("writer ", "name poster").populate("casts.person", "name poster")
     .then((movie) => res.json(movie))
     .catch((err) => res.status(400).json("Error: " + err));
 };
 
 const updateById = (req, res) => {
 
-
+  console.log(req.body.genres)
 
   Movie.findById(req.params.id)
     .then((movie) => {
@@ -117,6 +117,7 @@ const updateById = (req, res) => {
       movie.hot = req.body.hot;
       movie.userScore = req.body.userScore;
       movie.status = req.body.status;
+      movie.lemonScore = req.body.lemonScore;
 
 
       movie
@@ -128,6 +129,7 @@ const updateById = (req, res) => {
 };
 
 const adminUpdateById = (req, res) => {
+  console.log(req.body.genres)
   Movie.findById(req.params.id)
     .then((movie) => {
       movie.name = req.body.name;
@@ -144,6 +146,7 @@ const adminUpdateById = (req, res) => {
       movie.writer = req.body.writer;
       movie.hot = req.body.hot;
       movie.status = req.body.status;
+      movie.lemonScore = req.body.lemonScore;
       
       movie
         .save()
