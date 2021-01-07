@@ -58,7 +58,7 @@ class LoadData extends Component {
   removeConfirm=news=>{
     this.dialog.show({
       title: 'Confimation',
-      body: 'Are you want to delete this major?',
+      body: 'Are you want to change the status of this news?',
       actions: [
         Dialog.CancelAction(),
         Dialog.OKAction(() => {
@@ -85,7 +85,7 @@ class LoadData extends Component {
     <div className="row mb-4 items-align-center">
       <h2 className="mb-2 page-title">News control</h2>
         <div className="col-md-auto ml-auto text-right">
-          <button type="button" className="btn"><span className="fe fe-refresh-ccw fe-24 text-muted" ></span></button>
+
           <button type="button" className="btn" onClick={()=>this.setModalState(false,{})}><span className="fe fe-plus fe-24 text-muted text-primary" ></span></button>
         </div>
       </div>
@@ -99,7 +99,7 @@ class LoadData extends Component {
                     <tr>
                       <th>#</th>
                       <th>Header</th>
-                      <th>Author</th>
+                      <th>AuthorID</th>
                       <th>Create date</th>
                       <th>Active</th>
                       <th>Action</th>
@@ -122,7 +122,7 @@ class LoadData extends Component {
                               <div className="dropdown-menu dropdown-menu-right">
                                 <a className="dropdown-item text-warning pointercursor" onClick={()=>this.setModalState(true, news)}>Edit</a>
                                 <a className="dropdown-item text-danger pointercursor" onClick={()=>this.removeConfirm(news)}>{news.active === true ? "Disabled" : "Enable"  }</a>
-                                <a className="dropdown-item text-primary pointercursor" onClick={()=>this.setModalState(1,false)}>Activities</a>
+
 
                               </div>
                             </td>
@@ -149,11 +149,11 @@ class LoadData extends Component {
       >
         <Modal.Header closeButton>
           <Modal.Title id="example-modal-sizes-title-lg">
-              {this.state.modalType === 0 ? "News's Detail" : "Activities's Detail"}
+              News's Detail
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {this.state.modalType === 0 ? <NewsDetail viewDetails={this.state.viewFlag} airdrop={this.state.newsdetail}/>  : <ActivitiesDetail/>}
+          {<NewsDetail viewDetails={this.state.viewFlag} airdrop={this.state.newsdetail}/> }
         </Modal.Body>
       </Modal>
       {/* Dialog remove */}
@@ -204,9 +204,8 @@ class NewsDetail extends Component {
         poster: this.state.poster
       }
       console.log("Only edit")
-      // console.log(data)
+      console.log(data)
       newsservice.update(id,data).then(res => { 
-
           window.location.reload();}).catch(()=>alert("Something went wrong???"))
     }
     else
@@ -330,30 +329,5 @@ handleChange = event => {
     }
 }
  
-class ActivitiesDetail extends Component {
-    state = {  }
-    render() { 
-        return ( <div>
-            <div className="row align-items-center">
-                        <div className="col-3 text-center">
-                          <span className="circle circle-lg bg-light">
-                            <i className="fe fe-user fe-24 text-primary"></i>
-                          </span>
-                        </div>
-                        <div className="col">
-                          <div>
-                            <h3 className="h5 mt-4 mb-1">This movie is so such</h3>
-                            <small>12/12/2019</small>
-                          </div>
-                          <p className="text-muted">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris blandit nisl ullamcorper, rutrum metus in, congue lectus.</p>
-                          <a href="#"><small>by Mr.Dat</small></a>
-                          <p href="#" className="text-danger text-right"><small>Remove</small></p>
-                          <hr/>
-                        </div> 
-                    </div>
-          </div> );
-    }
-}
-
  
 export default News;

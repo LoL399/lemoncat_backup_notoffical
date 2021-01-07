@@ -80,7 +80,7 @@ const searchByGenres = (req, res) => {
 };
 
 const getAllHot = (req, res) => {
-  Movie.find({hot: true, status: true}).select("name poster genres hot")
+  Movie.find({hot: true, status: true}).select("name poster genres hot lemonScore")
     .then((movies) => res.json(movies))
     .catch((err) => res.status(400).json("Error: " + err));
 };

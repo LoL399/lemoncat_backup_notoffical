@@ -5,6 +5,7 @@ import 'react-multi-carousel/lib/styles.css';
 import movieservice from '../service/movieservice';
 import Wait from '../../Other/LoadingScreen';
 import { Link } from 'react-router-dom';
+import newsservice from '../service/newsservice';
 class MainPage extends Component {
 	state = { hotList: null, movieList: null, newsList: null }
 	
@@ -16,6 +17,7 @@ class MainPage extends Component {
 	loadData(){
 		movieservice.listHot().then(res => {this.setState({hotList: res.data});console.log(res.data)}).catch((err)=>alert(`Toang rồi đại ca, mạng mất hoặc server có vấn đề. Chi tiết: \n ${err}`))
 		movieservice.listNew().then(res => {this.setState({movieList: res.data});console.log(res.data)}).catch((err)=>alert(`Toang rồi đại ca, mạng mất hoặc server có vấn đề. Chi tiết: \n ${err}`))
+		newsservice.list(this.state.page).then(res => {this.setState({newsList: res.data.news}); console.log(this.state.newsList)}).catch((err)=>alert(`Toang rồi đại ca, mạng mất hoặc server có vấn đề. Chi tiết: \n ${err}`))
 	}
 
 
@@ -90,22 +92,37 @@ class MainPage extends Component {
 				</div>
 				
 				<div class="tab-pane fade" id="tab-2" role="tabpanel" aria-labelledby="2-tab">
-				<div class="col-sm-6">
-                <div class="card homecolor border-0 mr-2">
+					{
+						this.state.newsList === null ? <div className="d-block mx-auto"><Wait/></div>: <div>
+							{this.state.newsList.map((news,idx)=>{
+                let date = new Date(String(news.createdAt));
+                let year = date.getFullYear();
+                let month = date.getMonth()+1;
+                let dt = date.getDate();
+                
+                if (dt < 10) {
+                  dt = '0' + dt;
+                }
+                if (month < 10) {
+                  month = '0' + month;
+                }
+				return(
+					<div class="col-sm-6">
+                <div class="card homecolor mr-2">
                 <div class="row">
                     <div class=" col-sm-6">
-                        <img src={cover} className=" mx-auto d-block w-75 h-75"/>
+                        <img src={news.poster} className=" mt-4 mx-auto d-block w-75 h-75"/>
                         
                     </div>
-                    <div class=" col-sm-6">  
+                    <div class=" col-sm-6">     
                     <div class="card-body">
                        
-                        <div className="card__description card__description--details b-description_readmore_ellipsis text-light" >
-                            <h3 className="text-light">It is a long established fact that a reader.</h3>
-							<small className="text-light">09/09/2020</small>
+                        <div className="text-light" >
+                            <h3 className="text-light">{news.name}.</h3>
+							<small className="text-light">{dt+'/' + month + '/'+year}</small>
                         </div>
 
-						<button className="sign__btn" type="button">Đọc thêm →</button>
+						<Link to={`/home/news/${news._id}`}><button className="sign__btn" type="button">Đọc thêm →</button></Link>
 
                     </div>
                     </div>
@@ -113,6 +130,13 @@ class MainPage extends Component {
                     </div>
                 </div>
             </div>
+				)
+			})}
+
+						</div>
+					}
+								
+			
 				</div>
 			</div>
 		</div>
@@ -135,25 +159,16 @@ class MovieList extends Component {
 					<div className="row">
 						<div className="col-12 col-sm-4">
 							<div className="card__cover">
-								<img src={movie.poster} className="imgCard" alt="poster"/><a href="#" className="card__play">
-									<i className="icon ion-ios-play"></i>
-								</a>
+								<img src={movie.poster} className="imgCard" alt="poster"/>
+								<Link className="card__play" to={`/home/detail/${movie._id}`}><i className="icon ion-ios-play"></i></Link>
+									
+
 							</div>
 						</div>
 	
 						<div className="col-12 col-sm-8">
 							<div className="card__content">
-								<h3 className="card__title cardheader"><Link to={`/home/detail/${movie._id}`} href="#">{movie.name}</Link></h3>
-								<span className="card__category">
-									{movie.genres.map((genre,idx)=>{
-										return(
-											<a href="#">{genre}</a>
-										)
-
-									})}
-
-
-								</span>
+								<h3 className="card__title cardheader"><Link to={`/home/detail/${movie._id}`}>{movie.name}</Link></h3>
 	
 								{/* <div className="card__wrap">
 									<span className="card__rate"><i className="icon ion-ios-star"></i>8.4</span>
@@ -257,12 +272,12 @@ class  CarouselManager extends Component {
 					<div className="item">
 						<div className="card card--big homecolor border-0">
 							<div className="card__cover">
-								<img className="slideshow" src={movie.poster} alt="1" /><a href="#" className="card__play">
-									<i className="icon ion-ios-play"></i></a>
+								<img className="slideshow posterSlide" src={movie.poster} alt="1" />
+								<Link to={`/home/detail/${movie._id}`} className="pointercursor card__play" ><h3 className="card__title"><i className="icon ion-ios-play"></i></h3></Link>
 							</div>
 							<div className="card__content text-center homecolor">
 							<Link to={`/home/detail/${movie._id}`} className="pointercursor"><h3 className="card__title">{movie.name}</h3></Link>
-								<span className="card__rate "><i className="icon ion-ios-star text-right"></i>4.4</span>
+								<span className="card__rate "><i className="icon ion-ios-star text-right"></i>{movie.lemonScore}</span>
 							</div>
 						</div>
 	

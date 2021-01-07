@@ -74,7 +74,7 @@ const login = (req, res) => {
         else
         {
           console.log("not active");
-          return res.status(400).json("Your accout has ban. Please contact with the system later");
+          return res.status(200).json({err:403});
         }
 
 

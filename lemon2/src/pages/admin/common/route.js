@@ -13,7 +13,7 @@ const admin = "/admin";
 
 const routes = [
     {path: admin+"/movie" , exact : true, name: "Movie", component: Movies},
-    {path: admin+"/" , exact : true,name: "Home",component: Index},
+    {path: admin+"/" , exact : true,name: "Home",component: Movies},
     {path: admin+"/person" , exact : true,name: "Person", component: Person} ,
     {path: admin+"/review" , exact : true,name: "Review",component: Review},
     {path: admin+"/news" , exact : true,name: "News",component: News},

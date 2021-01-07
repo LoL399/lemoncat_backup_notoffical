@@ -13,7 +13,7 @@ import cookieUlti from '../common/cookieUlti';
 import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props'
 
 class LoginUser extends Component {
-	state = { remember:false, email: "", password: "", emailValidate: "", passValidate: "" }
+	state = { remember:false, email: "", password: "", emailValidate: "", passValidate: "", message: "" }
 
 	componentDidMount()
 	{
@@ -45,35 +45,43 @@ class LoginUser extends Component {
 
 	loginSys = data => {
 		userservice.login(data).then(res => {console.log(res)
-			localStorage.setItem('personId', res.data.data.id);
-			localStorage.setItem('name', res.data.data.name);
-			localStorage.setItem('avatar', res.data.data.photo);
-            console.log(localStorage.getItem('personId'))
-			Cookies.set("userLogin",res.data.token,{expires:1});  
-			this.props.history.push('/home');
-            this.props.history.go(0);
-		})
+			if(res.data.err && res.data.err=== 403)
+            {
+                this.setState({message:"Tài khoản bị khóa"})
+			}
+			else{
+				localStorage.setItem('personId', res.data.data.id);
+				localStorage.setItem('name', res.data.data.name);
+				localStorage.setItem('avatar', res.data.data.photo);
+				console.log(localStorage.getItem('personId'))
+				Cookies.set("userLogin",res.data.token,{expires:1});  
+				this.props.history.push('/home');
+				this.props.history.go(0);
+
+			}
+
+		}).catch(err => this.setState({message: "Thông tin bị sai, vui lòng kiểm tra" }))
 	}
 
-	responseFacebook = (res) => {
-		const data ={
+	// responseFacebook = (res) => {
+	// 	const data ={
 
-			email: res.email,
-			password: res.id + "facebook"
-		}
-		this.loginSys(data);
+	// 		email: res.email,
+	// 		password: res.id + "facebook"
+	// 	}
+	// 	this.loginSys(data);
 		
-	  }
+	//   }
 
 
-	 responseGoogle = (res) => {
-		const data ={
+	//  responseGoogle = (res) => {
+	// 	const data ={
 
-			email: res.profileObj.email,
-			password: res.profileObj.googleId + "google"
-		}
-		this.loginSys(data);
-	  }
+	// 		email: res.profileObj.email,
+	// 		password: res.profileObj.googleId + "google"
+	// 	}
+	// 	this.loginSys(data);
+	//   }
 
 
 	submit(){
@@ -107,7 +115,7 @@ class LoginUser extends Component {
 							<div className="sign__group sign__group--checkbox">
 								<input name="remember" type="checkbox" checked={this.state.remember} onClick={()=>this.remembercheck()}/><label onClick={()=>this.remembercheck()}>Ghi nhớ đăng nhập</label>
 							</div>
-							<ul className="footer__social sign__text m-0">
+							{/* <ul className="footer__social sign__text m-0">
 								<li className="facebook">
 								
 								<FacebookLogin
@@ -137,9 +145,10 @@ class LoginUser extends Component {
 									cookiePolicy={'single_host_origin'}
 									/>
   								</li>
-							</ul>
+							</ul> */}
 							
 							<button className="sign__btn" type="button" onClick={()=>this.submit()}>Đăng nhập</button>
+							<span className="sign__text text-danger">{this.state.message}</span>
 
 							<span className="sign__text">Chưa có tài khoản? <Link to="/home/registry">Đăng kí ngay!</Link></span>
 							

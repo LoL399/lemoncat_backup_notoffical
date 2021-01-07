@@ -48,11 +48,12 @@ class LoadData extends Component {
 removeConfirm=person=>{
     this.dialog.show({
       title: 'Confimation',
-      body: 'Are you want to delete this major?',
+      body: 'Are you want to change the status of this person?',
       actions: [
         Dialog.CancelAction(),
         Dialog.OKAction(() => {
-          peopleservice.remove()
+          peopleservice.remove(person)
+          window.location.reload();
         })
       ],
       bsSize: 'small',
@@ -71,7 +72,7 @@ removeConfirm=person=>{
               <div className="row mb-4 items-align-center">
                 <h2 className="mb-2 page-title">People control</h2>
                   <div className="col-md-auto ml-auto text-right">
-                    <button type="button" className="btn"><span className="fe fe-refresh-ccw fe-24 text-muted" ></span></button>
+
                     <button type="button" className="btn" onClick={()=>this.setModalState(false,{})}><span className="fe fe-plus fe-24 text-muted text-primary" ></span></button>
                   </div>
                 </div>
@@ -106,8 +107,7 @@ removeConfirm=person=>{
                               </button>
                               <div className="dropdown-menu dropdown-menu-right">
                                 <a className="dropdown-item text-warning pointercursor" onClick={()=>this.setModalState(true, person)}>Edit</a>
-                                <a className="dropdown-item text-danger pointercursor" onClick={()=>this.removeConfirm(person)}>Disable</a>
-                                <a className="dropdown-item text-primary pointercursor" onClick={()=>this.setModalState(1,false)}>Activities</a>
+                                <a className="dropdown-item text-danger pointercursor" onClick={()=>this.removeConfirm(person)}>Remove</a>
 
                               </div>
                             </td>
@@ -263,7 +263,7 @@ class PersonDetail extends Component {
                 }
 
               <div className="form-group col-md-6">
-              <label>Country</label>
+              <label>Birth Date</label>
                     <input type="text" className="form-control" name="bornIn" value={this.state.bornIn} onChange={this.handleChange}/>
               </div>
             </div>

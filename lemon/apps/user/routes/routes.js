@@ -15,19 +15,20 @@ router.get("/getInfo", jwtcheck.authenticateUser , login.getInfo);
 router.post("/userupdate", jwtcheck.authenticateUser , login.updateByUser);
 router.post("/updatePass", jwtcheck.authenticateUser , login.updatePass);
 
-router.post("/comments/create", comments.create);
+router.post("/comments/create", jwtcheck.authenticateUser, comments.create);
 router.get("/comments/get", comments.getAll);
 router.get("/comments/get-by-id/:id", comments.getById);
-router.put("/comments/update/:id", comments.updateById);
-router.delete("/comments/delete/:id", comments.deleteById);
+router.put("/comments/update/:id", jwtcheck.authenticateUser, comments.updateById);
+router.delete("/comments/delete/:id", jwtcheck.authenticateUser, comments.deleteById);
 
-router.post("/reviews/create", reviews.create);
+router.post("/reviews/create", jwtcheck.authenticateUser, reviews.create);
 router.get("/reviews/get", reviews.getAll);
 router.get("/reviews/get-by-id/:id", reviews.getById);
 router.get("/reviews/get-by-movie/:id", reviews.getByMovie);
-router.post("/reviews/update/:id", reviews.updateById);
-router.delete("/reviews/delete/:id", reviews.deleteById);
-
+router.get("/reviews/getUserScore/:id", reviews.getUserScore);
+router.post("/reviews/update/:id", jwtcheck.authenticateUser, reviews.updateById);
+router.delete("/reviews/delete/:id", jwtcheck.authenticateUser, reviews.deleteById);
+router.get("/reviews/byUser/:id", reviews.getByUser);
 
 router.post("/news/create", news.create);
 router.get("/news/get", news.getAll);
@@ -36,14 +37,14 @@ router.get("/news/search/:search", news.searchByName);
 router.get("/news/getNewest", news.getNewest);
 router.get("/news/getActive/:page", news.getAllActive);
 router.get("/news/get-by-id/:id", news.getById);
-router.post("/news/update/:id", news.updateById);
-router.delete("/news/delete/:id", news.deleteById);
-router.get("/news/search/:search", news.searchByName);
+router.post("/news/update/:id", jwtcheck.authenticateUser, news.updateById);
+router.delete("/news/delete/:id", jwtcheck.authenticateUser, news.deleteById);
 
 
-router.get("/users/get-by-id/:id", users.clientgetByID);
 
-router.post("/movies/create", movies.create);
+router.get("/users/get-by-id/:id", jwtcheck.authenticateUser, users.clientgetByID);
+
+router.post("/movies/create", jwtcheck.authenticateUser, movies.create);
 router.get("/movies/search/:search", movies.searchByName);
 router.get("/movies/getActive/:page", movies.getAllActive);
 router.post("/movies/byGenres/:page", movies.searchByGenres);
@@ -52,7 +53,7 @@ router.get("/movies/getNewest", movies.getNewest);
 
 // router.get("/movies/get", movies.getAll);
 router.get("/movies/get-by-id/:id", movies.getById);
-router.post("/movies/update/:id", movies.updateById);
+router.post("/movies/update/:id", jwtcheck.authenticateUser, movies.updateById);
 router.delete("/movies/delete/:id", movies.deleteById);
 
 

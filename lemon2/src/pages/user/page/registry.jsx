@@ -85,14 +85,14 @@ class RegistryUser extends Component {
 	  }
 
 	 responseGoogle = (res) => {
-		const data ={
-			name: res.profileObj.name,
-			email: res.profileObj.email,
-			password: res.profileObj.googleId + "google"
-		}
-		// "104988882528795719138"
+		// const data ={
+		// 	name: res.profileObj.name,
+		// 	email: res.profileObj.email,
+		// 	password: res.profileObj.googleId + "google"
+		// }
+		// // "104988882528795719138"
 
-		this.createUser(data);
+		// this.createUser(data);
 	  }
 
 

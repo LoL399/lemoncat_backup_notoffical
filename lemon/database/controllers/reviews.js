@@ -1,3 +1,4 @@
+const e = require("express");
 let Review = require("../models/reviews");
 
 const create = (req, res) => {
@@ -22,7 +23,7 @@ const create = (req, res) => {
 
 const getAll = (req, res) => {
   // console.log("here")
-  Review.find().populate("comment.comment", "content byUser")
+  Review.find().populate("comment.comment", "content byUser").populate("byUser", "name").populate("forMovie", "name foster").then((reviews) => res.status(200).json(reviews))
     .catch((err) => res.status(400).json("Error: " + err));
 };
 
@@ -31,6 +32,19 @@ const getByMovie= (req, res) => {
   .then((reviews) => {res.json(reviews)})
   .catch((err) => res.status(400).json("Error: " + err));
 }
+
+const getByUser= (req, res) => {
+  Review.find({byUser: req.params.id})
+  .then((reviews) => {res.json(reviews)})
+  .catch((err) => res.status(400).json("Error: " + err));
+}
+
+const getByMovieAdmin= (req, res) => {
+  Review.find({forMovie: req.params.id}).populate("byUser","name photo").populate("comment.comment", "content byUser createAt")
+  .then((reviews) => {res.json(reviews)})
+  .catch((err) => res.status(400).json("Error: " + err));
+}
+
 
 const getById = (req, res) => {
   Review.findById(req.params.id)
@@ -49,6 +63,7 @@ const updateById = (req, res) => {
       review.tag = req.body.tag;
       review.comment = req.body.comment;
       review.like = req.body.like
+      review.active = req.body.active
       review
         .save()
         .then(() => res.json("review updated!"))
@@ -67,6 +82,8 @@ const adminUpdateById = (req, res) => {
       review.active = req.body.active;
       review.tag = req.body.tag;
       review.hot = req.body.hot;
+      review.comment = req.body.comment;
+
 
       review
         .save()
@@ -82,6 +99,14 @@ const deleteById = (req, res) => {
     .catch((err) => res.status(400).json("Error: " + err));
 };
 
+const getUserScore = (req, res) =>{
+  Review.find({forMovie: req.params.id}).then((reviews)=>{
+    let sum = 0
+    reviews.forEach(e => sum=sum+e.userScore)
+    res.status(200).json({score: sum/reviews.length})
+  }).catch(err => res.status(400))
+}
+
 module.exports = {
   create,
   getAll,
@@ -90,4 +115,7 @@ module.exports = {
   deleteById,
   adminUpdateById,
   getByMovie,
+  getByMovieAdmin,
+  getUserScore,
+  getByUser
 };

@@ -53,12 +53,18 @@ body,html,#root{
   .form-label-group>label {
     padding: var(--input-padding-y) var(--input-padding-x);
   }
-/* 
+
   .logoLemonAdmin{
-    height: 50px;
-    width: 80px;
-    margin-left: -40%;
-  } */
+    height: 100px;
+    width: auto;
+    margin-left: -20%;
+  }
+
+  .logoLemonAdminSmall{
+    height: 30px;
+    width: auto;
+    margin-left: -20%;
+  }
   
   .form-label-group>label {
     position: absolute;

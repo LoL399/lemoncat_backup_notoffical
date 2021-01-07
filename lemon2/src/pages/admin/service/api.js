@@ -1,4 +1,5 @@
 import axios from 'axios';
+import cookieUlti from '../common/cookieUlti';
 const url ={    /// tat ca cac duong dan thi nam o day
     baseURL: "http://localhost:7000/admin",
     movies: "/movies",
@@ -13,7 +14,8 @@ const instance = axios.create({
     baseURL: url.baseURL,                   
     headers:{
         "Content-Type":"application/json",  
-        "Accept":"application/json"          
+        "Accept":"application/json",
+        'Authorization': `Basic ${cookieUlti.getCookie("loginInfo")}`          
     },
 });
 

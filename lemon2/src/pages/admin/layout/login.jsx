@@ -31,15 +31,24 @@ class Login extends Component {
             console.log(res)
 
             //redirec to dashboard
+            if(res.data.err && res.data.err=== 403)
+            {
+                this.setState({message:"Tài khoản bị khóa"})
+            }
+            else
+            {
+                this.setState({message:""});
+                //luu cookie  //expires:1 
+                // let token = jwt.encode(data, res.data);
+                localStorage.setItem('user', res.data.data.id)
+                localStorage.setItem('userAvatar', res.data.data.photo)
+                Cookies.set("loginInfo",res.data.token,{expires:1});  
+                this.props.history.push('/admin');
+                this.props.history.go(0);
 
-            this.setState({message:""});
-            //luu cookie  //expires:1 
-            // let token = jwt.encode(data, res.data);
-            localStorage.setItem('user', res.data.data.id)
-            console.log(localStorage.getItem('user'))
-            Cookies.set("loginInfo",res.data.token,{expires:1});  
-            this.props.history.push('/admin');
-            this.props.history.go(0);
+            }
+
+
 
 
         }).catch(()=>this.setState({message:"Tài khoản không tìm thấy"}))

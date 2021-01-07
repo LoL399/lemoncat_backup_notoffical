@@ -69,6 +69,7 @@ const adminUpdateById = (req, res) => {
       news.hot = req.body.hot;
       news.poster = req.body.poster;
       news.comment = req.body.comment;
+      news.byUser = req.body.byUser;
 
       news
         .save()

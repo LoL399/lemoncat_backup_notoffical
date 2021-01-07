@@ -7,6 +7,7 @@ import { Modal } from 'react-bootstrap';
 import Dialog from 'react-bootstrap-dialog';
 import createtable from '../common/datatable';
 import userservice from '../service/userservice';
+import reviewservice from '../service/reviewservice';
 import Wait from '../../Other/LoadingScreen';
 
 class UserInfo extends Component {
@@ -14,7 +15,6 @@ class UserInfo extends Component {
 
     componentDidMount(){
       this.loadData();
-
     }
 
     loadData(){
@@ -34,10 +34,17 @@ class UserInfo extends Component {
 }
 
 class LoadData extends Component {
-  state = {  modalState: false,modalType: 0, viewFlag: false, userdetail: {} }
+  state = {  modalState: false,modalType: 0, viewFlag: false, userdetail: {}, listUser: [] }
   componentDidMount(){
-    createtable();
+    this.loadData();
+    
   }
+
+
+  loadData(){
+    this.setState({listUser: this.props.userlist},()=>{ createtable();});
+  }
+
   setModalState=(type,addModal,user)=>{
     this.setState({viewFlag: addModal})
     this.setState({modalType: type})
@@ -53,15 +60,20 @@ class LoadData extends Component {
   removeConfirm=user=>{
     this.dialog.show({
       title: 'Confimation',
-      body: 'Are you want to delete this major?',
+      body: 'Are you want to edit this user?',
       actions: [
         Dialog.CancelAction(),
         Dialog.OKAction(() => {
           user.status = !user.status;
           console.log(user)
           userservice.update(user._id,user).then((res) => { 
-            console.log(res)         
-            window.location.reload();
+
+            const index = this.state.listUser.findIndex((element)=>{return element._id == user._id})  
+            let item = this.state.listUser;
+            item[index] = user;
+            this.setState({listUser: item})
+            // console.log(res)         
+            // window.location.reload();
             }).catch(err => console.log(err))
 
         })
@@ -80,7 +92,6 @@ class LoadData extends Component {
       <div className="row mb-4 items-align-center">
         <h2 className="mb-2 page-title">User's info control</h2>
           <div className="col-md-auto ml-auto text-right">
-            <button type="button" className="btn"><span className="fe fe-refresh-ccw fe-24 text-muted" ></span></button>
             <button type="button" className="btn" onClick={()=>this.setModalState(0, false,{})}><span className="fe fe-plus fe-24 text-muted text-primary" ></span></button>
           </div>
         </div>
@@ -94,7 +105,6 @@ class LoadData extends Component {
               <tr>
                   <th>#</th>
                   <th>Name</th>
-
                   <th>Email</th>
                   <th>Status</th>
                   <th>Role</th>
@@ -103,7 +113,7 @@ class LoadData extends Component {
               </thead>
               <tbody>
                 {
-                   this.props.userlist.map((user,idx)=>{
+                   this.state.listUser.map((user,idx)=>{
                     return (
                       <tr key={idx}>
 
@@ -118,7 +128,7 @@ class LoadData extends Component {
                         <div className="dropdown-menu dropdown-menu-right">
                           <a className="dropdown-item text-warning pointercursor" onClick={()=>this.setModalState(0, true,user)}>Edit</a>
                           <a className="dropdown-item text-danger pointercursor" onClick={()=>this.removeConfirm(user)}>{user.status === true ? "Disabled" : "Enable"  }</a>
-                          <a className="dropdown-item text-primary pointercursor" onClick={()=>this.setModalState(1,false)}>Activities</a>
+                          <a className="dropdown-item text-primary pointercursor" onClick={()=>this.setModalState(1,false, user)}>Activities</a>
                         </div>
                       </td>
                     </tr>
@@ -138,7 +148,7 @@ class LoadData extends Component {
                     </Modal.Title>
                   </Modal.Header>
                   <Modal.Body>
-                    {this.state.modalType === 0 ? <UserDetail viewDetails={this.state.viewFlag} userdetail={this.state.userdetail}/> : <ActivitiesDetail/>}
+                    {this.state.modalType === 0 ? <UserDetail viewDetails={this.state.viewFlag} userdetail={this.state.userdetail}/> : <ReviewModal userID={this.state.userdetail} />}
                   </Modal.Body>
                 </Modal>
                 {/* Dialog remove */}
@@ -289,92 +299,102 @@ class UserDetail extends Component {
     }
 }
 
-class ActivitiesDetail  extends Component {
-    state = { ActivitiesState: 0 }
+class ReviewModal extends Component {
+  state = { listReview: []  }
 
-    changeActivity(id){
-      this.setState({ActivitiesState: id});
+  componentDidMount(){
+
+    this.loadData();
+  }
+
+  loadData(){
+
+    if(this.props.userID)
+    {
+      reviewservice.getByUer(this.props.userID._id).then(res => {this.setState({listReview: res.data}, () => console.log(res.data))}).catch(err => console.log(err));
     }
-    renderSwitch(id){
-      switch(id) {
-        case 1:
-          return <CommentDetail/>;
-        default:
-          return <ReviewDetail/>;
+    else
+    {
+      this.setState({listReview : []})
+    }
+
+
+  }
+
+
+  removeConfirm=review=>{
+    let flag = review.active
+    this.dialog.show({
+      title: 'Confimation',
+      body: 'Do you want to change the status of this review?',
+      actions: [
+        Dialog.CancelAction(),
+        Dialog.OKAction(() => {
+          review.active = !review.active;
+          console.log(review)
+          reviewservice.update(review._id,review).then(() => { 
+            const index = this.state.listReview.findIndex((element)=>{return element._id == review._id})  
+            let item = this.state.listReview;
+            item[index] = review;
+            this.setState({listReview: item})
+              // console.log(res)         
+            // window.location.reload();
+            }).catch(err => console.log(err))
+        })
+      ],
+      bsSize: 'small',
+      onHide: (dialog) => {
+        dialog.hide()
+        console.log('closed by clicking background.')
       }
-    }
+    })
+    
+  }
 
-    render() { 
-        return ( 
-            <div>
-                <ul className="nav nav-pills nav-fill mb-3" id="pills-tab" role="tablist">
-                    <li className="nav-item">
-                        <span className="nav-link active pointercursor"  data-toggle="pill" role="tab" aria-controls="pills-home" aria-selected="true" onClick={()=>this.changeActivity(0)} >Reviews</span>
-                    </li>
-                    <li className="nav-item">
-                        <span className="nav-link pointercursor" data-toggle="pill" role="tab" aria-controls="pills-home" aria-selected="false" onClick={()=>this.changeActivity(1)} >Comment</span>
-                    </li>
-                </ul>
-                
-                <div className="tab-content mb-1" id="pills-tabContent">
-                    {this.renderSwitch(this.state.ActivitiesState)}
+  render() { 
+    return ( 
+      <div>
+        {
+          this.state.listReview.length === 0 ? <h2>No review yet</h2> :
+          this.state.listReview.map((review,idx)=>{
+            return(
+              <div className="row align-items-center">
+              <div className="col-3 text-center">
+                <span className="circle circle-lg bg-light">
+                  <i className="fe fe-user fe-24 text-primary"></i>
+                </span>
+              </div>
+              <div className="col">
+                <div>
+
+                  <h3 className="h5 mt-4 mb-1">{review.name} </h3>
+                  {review.active === true ? <span class="badge badge-pill badge-success text-light">Active</span>: <span class="badge badge-pill badge-danger">Inactive</span> }
+                  <i className="fe fe-thumbs-up fe-15 text-primary ml-3"></i>: {review.like.length}
+
                 </div>
-            </div>
-         );
-    }
-}
+                <div>
+                <small>{review.updatedAt}</small>
+                </div>
+                <div>
+                <small>by: {review.byUser.name}</small>
+                </div>
+                <p className="text-muted">{review.content}</p>
+                <small>Rating:<i className="fe fe-star fe-15 text-primary ml-3"></i> {review.userScore}/10</small>
+                
+                <p  className="text-danger text-right pointercursor" onClick={()=>this.removeConfirm(review)}><small>{review.active === true ? "Disabled" : "Enable"  }</small></p>
+                <hr/>
+                <Dialog ref={(el) => { this.dialog = el }} />
+              </div> 
+          </div>
+            )
+            
+          })
 
+        }
 
-class ReviewDetail extends Component {
-    state = {  }
-    render() { 
-        return ( <div>
-          <div className="row align-items-center">
-                      <div className="col-3 text-center">
-                        <span className="circle circle-lg bg-light">
-                          <i className="fe fe-user fe-24 text-primary"></i>
-                        </span>
-                      </div>
-                      <div className="col">
-                        <div>
-                          <h3 className="h5 mt-4 mb-1">This movie is so such</h3>
-                          <small>12/12/2019</small>
-                        </div>
-                        <p className="text-muted">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris blandit nisl ullamcorper, rutrum metus in, congue lectus.</p>
-                        
-                        <p className="text-warning">Rating: 2/5</p>
-                        <a href="#"><small>by Mr.Dat</small></a>
-                        <p href="#" className="text-danger text-right"><small>Remove</small></p>
-                        <hr/>
-                      </div> 
-                  </div>
-        </div>  );
-    }
-}
-
-class CommentDetail extends Component {
-    state = {  }
-    render() { 
-        return ( <div>
-          <div className="row align-items-center">
-                      <div className="col-3 text-center">
-                        <span className="circle circle-lg bg-light">
-                          <i className="fe fe-user fe-24 text-primary"></i>
-                        </span>
-                      </div>
-                      <div className="col">
-                        <div>
-                          <h3 className="h5 mt-4 mb-1">This movie is so such</h3>
-                          <small>12/12/2019</small>
-                        </div>
-                        <p className="text-muted">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris blandit nisl ullamcorper, rutrum metus in, congue lectus.</p>
-                        <a href="#"><small>by Mr.Dat</small></a>
-                        <p href="#" className="text-danger text-right"><small>Remove</small></p>
-                        <hr/>
-                      </div> 
-                  </div>
-        </div>);
-    }
+      </div>
+     );
+  }
 }
  
 export default UserInfo;

@@ -37,7 +37,7 @@ class Movies extends Component {
 }
 
 class ReviewModal extends Component {
-  state = { listReview: [],  }
+  state = { listReview: []  }
 
   componentDidMount(){
 
@@ -45,9 +45,7 @@ class ReviewModal extends Component {
   }
 
   loadData(){
-    console.log("here")
-    reviewservice.getByMovie(this.props.movieId).then(res => {this.setState({listReview: res.data});  
-    console.log(res.data);  console.log(this.setState.listReview)}).catch(err => console.log(err));
+    reviewservice.getByMovie(this.props.movieId).then(res => {this.setState({listReview: res.data}, () => console.log(res.data))}).catch(err => console.log(err));
 
   }
 
@@ -63,7 +61,10 @@ class ReviewModal extends Component {
           review.active = !review.active;
           console.log(review)
           reviewservice.update(review._id,review).then(() => { 
-
+            const index = this.state.listReview.findIndex((element)=>{return element._id == review._id})  
+            let item = this.state.listReview;
+            item[index] = review;
+            this.setState({listReview: item})
               // console.log(res)         
             // window.location.reload();
             }).catch(err => console.log(err))
@@ -83,7 +84,7 @@ class ReviewModal extends Component {
       <div>
         {
           this.state.listReview.length === 0 ? <h2>No review yet</h2> :
-          this.state.listReview.map((review)=>{
+          this.state.listReview.map((review,idx)=>{
             return(
               <div className="row align-items-center">
               <div className="col-3 text-center">
@@ -96,17 +97,19 @@ class ReviewModal extends Component {
 
                   <h3 className="h5 mt-4 mb-1">{review.name} </h3>
                   {review.active === true ? <span class="badge badge-pill badge-success text-light">Active</span>: <span class="badge badge-pill badge-danger">Inactive</span> }
+                  <i className="fe fe-thumbs-up fe-15 text-primary ml-3"></i>: {review.like.length}/10
 
                 </div>
                 <div>
                 <small>{review.updatedAt}</small>
                 </div>
                 <div>
-                <small>by user Id: {review.byUser}</small>
+                <small>by: {review.byUser.name}</small>
                 </div>
                 <p className="text-muted">{review.content}</p>
                 <small>Rating: {review.userScore}/10</small>
-                <p  className="text-danger text-right" onClick={()=>this.removeConfirm(review)}><small>{review.active === true ? "Disabled" : "Enable"  }</small></p>
+                
+                <p  className="text-danger text-right pointercursor" onClick={()=>this.removeConfirm(review)}><small>{review.active === true ? "Disabled" : "Enable"  }</small></p>
                 <hr/>
                 <Dialog ref={(el) => { this.dialog = el }} />
               </div> 
@@ -184,7 +187,7 @@ class LoadData extends Component {
   removeConfirm=movie=>{
     this.dialog.show({
       title: 'Confimation',
-      body: 'Are you want to change this movie?',
+      body: 'Are you want to change the status of this movie?',
       actions: [
         Dialog.CancelAction(),
         Dialog.OKAction(() => {
@@ -214,7 +217,7 @@ class LoadData extends Component {
     <div className="row mb-4 items-align-center">
       <h2 className="mb-2 page-title">Movies control</h2>
         <div className="col-md-auto ml-auto text-right">
-          <button type="button" className="btn"><span className="fe fe-refresh-ccw fe-24 text-muted" ></span></button>
+
           <button type="button" className="btn" onClick={()=>this.setModalState(0, false,{})}><span className="fe fe-plus fe-24 text-muted text-primary" ></span></button>
         </div>
       </div>

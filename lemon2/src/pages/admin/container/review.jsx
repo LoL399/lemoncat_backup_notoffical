@@ -21,7 +21,7 @@ class Review extends Component {
       }
     
       loadData(){
-        reviewservice.list().then(res => {this.setState({reviewlist: res.data}); console.log(res)})
+        reviewservice.list().then(res => {this.setState({reviewlist: res.data}); console.log(res)}).catch(err => this.setState({reviewlist: []}))
       }  
       
 
@@ -35,9 +35,9 @@ class Review extends Component {
 }
 
 class LoadData extends Component {
-  state = { modalState: false ,modalType: 0, viewFlag: false, review:{} }
+  state = { modalState: false ,modalType: 0, viewFlag: false, review:{}, reviewList: null }
   componentDidMount(){
-    createtable();
+    this.setState({reviewList: this.props.reviewlist}, ()=> createtable())
   }
         
   setModalState=(addModal, data, type)=>{
@@ -55,15 +55,19 @@ class LoadData extends Component {
   removeConfirm=review=>{
     this.dialog.show({
       title: 'Confimation',
-      body: 'Are you want to delete this major?',
+      body: 'Are you want to change the status of this review?',
       actions: [
         Dialog.CancelAction(),
         Dialog.OKAction(() => {
           review.active = !review.active;
           console.log(review)
           reviewservice.update(review._id,review).then(() => { 
+            const index = this.state.reviewList.findIndex((element)=>{return element._id == review._id})  
+            let item = this.state.reviewList;
+            item[index] = review;
+            this.setState({reviewList: item})
               // console.log(res)         
-            window.location.reload();
+            // window.location.reload();
             }).catch(err => console.log(err))
         })
       ],
@@ -81,10 +85,6 @@ class LoadData extends Component {
       <div className="col-12">
       <div className="row mb-4 items-align-center">
         <h2 className="mb-2 page-title">Review control</h2>
-          <div className="col-md-auto ml-auto text-right">
-            <button type="button" className="btn"><span className="fe fe-refresh-ccw fe-24 text-muted" ></span></button>
-            <button type="button" className="btn" onClick={()=>this.setModalState(false,{},0)}><span className="fe fe-plus fe-24 text-muted text-primary" ></span></button>
-          </div>
         </div>
       <div className="row my-4">
 
@@ -96,6 +96,8 @@ class LoadData extends Component {
                       <tr>
                         <th>#</th>
                         <th>Header</th>
+                        <th>For movie</th>
+                        <th>By User</th>
                         <th>Rating</th>
                         <th>Status</th>
                         <th>Action</th>
@@ -103,26 +105,28 @@ class LoadData extends Component {
                     </thead>
                     <tbody>
                     {
-                          this.props.reviewlist.map((review,idx)=>{
+                          this.state.reviewList !== null ? this.state.reviewList.map((review,idx)=>{
                             return (
                             <tr key={idx}>
                             <td>{review._id}</td>
                             <td>{review.name}</td>
+                            <td>{review.forMovie.name}</td>
+                            <td>{review.byUser.name}</td>
                             <td>{review.userScore}</td>
                             <td>{review.active === true ? <span class="badge badge-pill badge-success text-light">Active</span>: <span class="badge badge-pill badge-danger">Inactive</span> }</td>
                             <td><button className="btn btn-sm dropdown-toggle more-horizontal" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span className="text-muted sr-only">Action</span>
                               </button>
                               <div className="dropdown-menu dropdown-menu-right">
-                                <a className="dropdown-item text-warning pointercursor" onClick={()=>this.setModalState(true, review,0)}>Edit</a>
+                                <a className="dropdown-item text-warning pointercursor" onClick={()=>this.setModalState(true, review,0)}>Detail</a>
                                 <a className="dropdown-item text-danger pointercursor" onClick={()=>this.removeConfirm(review)}>{review.active === true ? "Disabled" : "Enable"  }</a>
-                                <a className="dropdown-item text-primary pointercursor" onClick={()=>this.setModalState(true,false,0)}>Activities</a>
+                                <a className="dropdown-item text-primary pointercursor" onClick={()=>this.setModalState(true,review,1)}>Activities</a>
 
                               </div>
                             </td>
                             </tr>
                             )
-                          })
+                          }) : null
                         }
 
 
@@ -145,7 +149,7 @@ class LoadData extends Component {
               </Modal.Title>
             </Modal.Header>
             <Modal.Body>
-            {this.state.modalType === 0 ? <ReviewModal viewDetails={this.state.viewFlag} reviewDetails={this.state.review}/>    : <CommentModal/>}
+            {this.state.modalType === 0 ? <ReviewModal viewDetails={this.state.viewFlag} reviewDetails={this.state.review}/> : <CommentModal reviewDetails={this.state.review}/>}
                 
             </Modal.Body>
           </Modal>
@@ -160,28 +164,66 @@ class LoadData extends Component {
 
 
 class CommentModal extends Component {
-  state = { }
+  state = { review: null }
+
+  componentDidMount(){
+    if(this.props.reviewDetails)
+    {
+      this.setState({review: this.props.reviewDetails})
+    }
+    else
+    {
+      this.setState({review: []})
+    }
+
+  }
+
+  
+  removeConfirm=comment=>{
+    this.dialog.show({
+      title: 'Confimation',
+      body: 'Do you want to edit this review?',
+      actions: [
+        Dialog.CancelAction(),
+        Dialog.OKAction(() => {
+          let item = this.state.review;
+          item.comment.pop((e)=> {return e._id=== comment._id}) 
+          this.setState({review: item},()=>reviewservice.update(this.state.review._id,this.state.review).then(res => console.log(res)
+          ).catch(err => console.log(err)))
+          
+        })
+      ],
+      bsSize: 'small',
+      onHide: (dialog) => {
+        dialog.hide()
+        console.log('closed by clicking background.')
+      }
+    })
+    
+  }
+
+
 
   render() { 
     return ( 
       <div>
-        <div className="row align-items-center">
-                    <div className="col-3 text-center">
-                      <span className="circle circle-lg bg-light">
-                        <i className="fe fe-user fe-24 text-primary"></i>
-                      </span>
-                    </div>
-                    <div className="col">
-                      <div>
-                        <h3 className="h5 mt-4 mb-1">This movie is so such</h3>
-                        <small>12/12/2019</small>
-                      </div>
-                      <p className="text-muted">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris blandit nisl ullamcorper, rutrum metus in, congue lectus.</p>
-                      <a href="#"><small>by Mr.Dat</small></a>
-                      <p href="#" className="text-danger text-right"><small>Remove</small></p>
-                      <hr/>
-                    </div> 
-                </div>
+        {this.state.review === null || this.state.review.length === 0 ? <h5>No comment yet</h5> : this.state.review.comment.map((comment)=>{
+          return(                
+            <div className="row align-items-center">
+            <div className="col">
+
+              <p className="text-muted"> Comment: {comment.comment.content}</p>
+              <div>
+              <small>by userID: {comment.comment.byUser}</small>
+              </div>
+              
+              <p  className="text-danger text-right pointercursor" onClick={()=>this.removeConfirm(comment)}><small>Remove</small></p>
+              <hr/>
+              <Dialog ref={(el) => { this.dialog = el }} />
+            </div> 
+        </div>)
+        })
+ }
       </div>
      );
   }
@@ -309,21 +351,7 @@ class ReviewModal extends Component {
     render() { 
         return ( 
         <form>
-            <fieldset disabled={this.state.viewDetails}>
-            <div className="form-row">
-              <div className="form-group">
-                <label >Movie's title (please wait for the movie to show up ... ) </label>
-                <Select
-                value={this.state.forMovie}
-                onChange={this.handleMovie}
-                className="basic-multi-select"
-                classNamePrefix="select"
-                isDisabled={this.state.viewDetails}
-                options={this.state.listMovie}
-                name="director"/>
-              </div>
-            </div>
-               
+            <fieldset disabled={true}>
             <div className="form-row">
                 <div className="form-group col-md-6">
                     <label>Header</label>
@@ -347,7 +375,7 @@ class ReviewModal extends Component {
 
             </div>
               </fieldset>
-              {this.state.viewDetails===true?<a className="btn btn-warning text-light" onClick={()=>this.toEdit()}>Edit</a>:<a onClick={()=>this.submitForm(this.state.id)} className="btn btn-primary text-light">Submit</a>}
+    
           {this.state.viewDetails===true?null:<a className="btn btn-danger text-light" onClick={()=>this.toEdit()}>Cancel</a>}
  
           </form> );

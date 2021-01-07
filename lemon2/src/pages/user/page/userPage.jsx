@@ -3,9 +3,11 @@ import { ModalBody, Modal,Button } from 'react-bootstrap';
 import Wait from '../../Other/LoadingScreen';
 import cookieUlti from '../common/cookieUlti';
 import cover from '../common/images/covers-cover.jpg';
+import Dialog from 'react-bootstrap-dialog';
 import { passValidation } from '../common/validation';
 import userservice from '../service/userservice';
 import $ from 'jquery';
+import reviewservice from '../service/reviewservice';
 class UserPage extends Component {
     state = { 
         modalState: false,
@@ -49,7 +51,7 @@ class UserPage extends Component {
         case 2:
             return <PassChange/>;
         case 3:
-            return <ActivityChange/>;
+            return <ActivityChange userId={this.state.userInfo._id}/>;
         default:
           return null
         }
@@ -147,10 +149,7 @@ class UserPage extends Component {
                 onHide={this.setModalState}   
               >
                 <Modal.Body className="homecolor ">
-                    <div className="row">
-                    {/*  */}
-                    
-                    </div>
+
                      
                     <div className="section--bg homecolor">
                    
@@ -161,12 +160,8 @@ class UserPage extends Component {
                             
                                 <div className="col-12">
                                     <div className="d-flex justify-content-center">
-                                    <div className="">
-                                    {this.renderSwitch(this.state.tabType)}
-                                    </div>
 
-                                   
-                                    
+                                    {this.renderSwitch(this.state.tabType)}
                                     </div>
 
                                 </div>
@@ -334,58 +329,83 @@ class PassChange extends Component {
 }
 
 class ActivityChange extends Component {
-    state = {  }
+    state = { reviewList: null }
+    componentDidMount(){
+      
+      reviewservice.getByUser(this.props.userId).then(res=> this.setState({reviewList: res.data}, ()=> console.log(res.data)))
+      
+    }
+
+    removeConfirm=review=>{
+      this.dialog.show({
+        title: 'Xác nhận',
+        body: 'Bạn có muốn xóa bài đánh giá ?',
+        actions: [
+        Dialog.CancelAction(),
+        Dialog.OKAction(() => {
+          review.active = !review.active;
+          console.log(review)
+          reviewservice.update(review._id,review).then(() => { 
+            let item = this.state.reviewList;
+            item.pop((e)=> {return e._id=== review._id}) 
+            this.setState({reviewList: item})
+            // window.location.reload()
+        })})
+        ],
+        bsSize: 'small',
+        onHide: (dialog) => {
+        dialog.hide()
+        console.log('closed by clicking background.')
+        }
+      })
+      
+      }
+
+
     render() { 
         return ( 
-          <div>
-            <ul className="nav nav-tabs content__tabs border-0" id="content__tabs" role="tablist">
-							<li className="nav-item">
-								<a className="nav-link active" data-toggle="tab" href="#tab-1" role="tab" aria-controls="tab-1" aria-selected="true">Bình luận</a>
-							</li>
-
-							<li className="nav-item">
-								<a className="nav-link" data-toggle="tab" href="#tab-2" role="tab" aria-controls="tab-2" aria-selected="false">Đánh giá</a>
-							</li>
-              
-						</ul>
-            <div className="tab-content mt-5" id="myTabContent">
-							<div className="tab-pane fade active show" id="tab-1" role="tabpanel" aria-labelledby="1-tab">
-                {/*  */}
-                    <li className="comments__item">
-                  <div className="comments__autor">
-                  <img className="reviews__avatar" src="images/img-user.svg" alt=""/>
-                    <span className="comments__name">John Doe</span>
-                    <span className="comments__time">30.08.2018, 17:53</span>
+          <div className="col-12">
+            
+							<div className="tab-pane ">
+              {this.state.reviewList === null ?  <div className=" container-fluid section home h-100 color  border-0"><Wait/></div> : 
+              this.state.reviewList.map((review)=>{
+                let date = new Date(String(review.createdAt));
+                let year = date.getFullYear();
+                let month = date.getMonth()+1;
+                let dt = date.getDate();
+                if (dt < 10) {
+                dt = '0' + dt;
+                }
+                if (month < 10) {
+                month = '0' + month;
+                }
+                if(review.active)
+                                return(
+                  <li className="reviews__item">
+                  <div className="reviews__autor">
+                    <span className="reviews__name">{review.name}</span>
+                    <span className="reviews__time">{dt+'/' + month + '/'+year}</span>
+  
+                    <span className="reviews__rating"><i className="icon ion-ios-star"></i>{review.userScore}</span>
                   </div>
-                  <p className="comments__text">There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the middle of text.</p>
+                  <p className="reviews__text">{review.content}</p>
                   <div className="comments__actions">
-
-                    <button type="button"><i className="icon ion-ios-trash"></i>Xóa</button>
-
+  
+                  <button type="button" onClick={()=>this.removeConfirm(review)}><i className="icon ion-ios-trash"></i>Xóa</button>
+  
                   </div>
                 </li>
-							</div>
-							<div className="tab-pane fade " id="tab-2" role="tabpanel" aria-labelledby="2-tab">
+                )
+                else return null
+              }
+)}
 							{/* Hey listen */}
-                  <li className="reviews__item">
-                <div className="reviews__autor">
+              <Dialog ref={(el) => { this.dialog = el }} />
 
-                  <span className="reviews__name">Best Marvel movie in my opinion</span>
-                  <span className="reviews__time">24.08.2018, 17:53 by John Doe</span>
-
-                  <span className="reviews__rating"><i className="icon ion-ios-star"></i>8.4</span>
-                </div>
-                <p className="reviews__text">There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the middle of text.</p>
-                <div className="comments__actions">
-
-                <button type="button"><i className="icon ion-ios-trash"></i>Xóa</button>
-
-                </div>
-              </li>
 							</div>
 				
 						</div>
-          </div>
+        
          );
     }
 }

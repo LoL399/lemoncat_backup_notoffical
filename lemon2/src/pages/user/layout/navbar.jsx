@@ -21,6 +21,13 @@ class NavBar extends Component {
         {
             this.setState({logIn: true})
         }
+        else
+        {
+            this.setState({logIn: false})
+            localStorage.removeItem('personId');
+            localStorage.removeItem('name');
+            localStorage.removeItem('avatar');
+        }
     }
     logOutConfirm=()=>{
         this.dialog.show({

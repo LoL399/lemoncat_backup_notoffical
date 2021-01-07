@@ -15,11 +15,18 @@ import commentservice from '../service/commentservice';
 import reviewservice from '../service/reviewservice'
 
 class MovieDetail extends Component {
-	state = {  readMore: false, movieInfo: null }
+	state = {  readMore: false, movieInfo: null, userScore: null, recommedList: null }
 	componentDidMount(){
+		movieservice.list(this.state.page).then(res => {this.setState({recommedList: res.data.movies}); console.log(this.state.recommedList)})
 		movieservice.getOne(this.props.match.params.id).then(res=> 
 			{
 				this.setState({movieInfo: res.data},()=>{console.log(res.data)});
+				reviewservice.getUserScore(this.props.match.params.id).then((res)=> {
+					if(res.data.score)
+						this.setState({userScore: res.data.score})
+					else
+						this.setState({userScore: 0})
+				}).catch({userScore: 0})
 			}
 			).catch((err)=>alert(`Toang rồi đại ca, mạng mất hoặc server có vấn đề. Chi tiết: \n ${err}`))
 		// console.log(this.props.match.params.id)
@@ -37,7 +44,7 @@ class MovieDetail extends Component {
         return ( 
 			<div className="h-100">
             <section className="home homecolor border-0 ">
-				<div className="detail__bg gbMovie">
+				<div className="details__bg bgMovie">
 
 				</div>
 				
@@ -45,7 +52,7 @@ class MovieDetail extends Component {
 
                 <div className="container">
 
-					<div className="card card--details card--series homecolor border-0">
+				<div className=" card--details card--series border-0">
 						<div className="row">
 						<div className="col-12">
 					    <h1 className="details__title ">{this.state.movieInfo.name}</h1>
@@ -65,11 +72,12 @@ class MovieDetail extends Component {
 										<div className="row">
 										<div className = "col-12 col-md-6 col-xl-6">
 										<div class="card w-100">
-										<div class="card-body homecolor borderGradient">
-											<h5 className="card-title text-light">Điểm người dùng: {this.state.movieInfo.userScore}/10 <i className="icon ion-ios-star"></i> </h5>
-											<div className="score metaReview" style={{width: `${this.state.movieInfo.userScore*10}%`}}></div>
+											{this.state.userScore === null ?  <div className="d-block mx-auto container"><Wait/></div> : 
+													<div class="card-body homecolor borderGradient">
+													<h5 className="card-title text-light">Điểm người dùng: {this.state.userScore > 0 ? `${this.state.userScore}/10` : `chưa có đánh giá nào cả`} <i className="icon ion-ios-star"></i> </h5>
+														<div className="score metaReview" style={{width: `${this.state.userScore*10}%`}}></div>
+													</div>}
 
-										</div>
 										</div>
 
 										</div>
@@ -133,7 +141,8 @@ class MovieDetail extends Component {
 						<div className=" d-flex justify-content-center">
 						<ReactPlayer url={this.state.movieInfo.trailer[0]}/>
 						</div>
-					</div>
+						</div>
+
 					
 
 
@@ -169,13 +178,13 @@ class MovieDetail extends Component {
 
 						<div className="content__mobile-tabs" id="content__mobile-tabs">
 							<div className="content__mobile-tabs-btn dropdown-toggle" role="navigation" id="mobile-tabs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-								<input type="button" value="Comments"/>
+								<input type="button" value="Đánh giá"/>
 								<span></span>
 							</div>
 
 							<div className="content__mobile-tabs-menu dropdown-menu" aria-labelledby="mobile-tabs">
 								<ul className="nav nav-tabs" role="tablist">
-									<li className="nav-item" data-value="comments"><a className="nav-link active" id="1-tab" data-toggle="tab" href="#tab-1" role="tab" aria-controls="tab-1" aria-selected="true">Bình luận</a></li>
+									
 									<li className="nav-item" data-value="reviews"><a className="nav-link" id="2-tab" data-toggle="tab" href="#tab-2" role="tab" aria-controls="tab-2" aria-selected="false">Đánh giá</a></li>
 									<li className="nav-item" data-value="photos"><a className="nav-link" id="3-tab" data-toggle="tab" href="#tab-3" role="tab" aria-controls="tab-3" aria-selected="false">Photos</a></li>
 									<li className="nav-item" data-value="photos"><a className="nav-link" id="4-tab" data-toggle="tab" href="#tab-4" role="tab" aria-controls="tab-4" aria-selected="false">Diễn viên/ Đạo diễn</a></li>
@@ -215,25 +224,44 @@ class MovieDetail extends Component {
 						<div className="col-12">
 							<h2 className="section__title section__title--sidebar">Bạn nên xem qua ...</h2>
 						</div>
-						{/* Item */}
-						<div className="col-sm-7 col-lg-9 mx-auto">
+						{
+							this.state.recommedList === null ? <div className="d-block mx-auto container"><Wait/> </div> :
+							<div>
+							<div className="col-sm-7 col-lg-9 mx-auto">
 							<div className="card homecolor border-0">
 								<div className="card__cover">
-									<img src={cover} alt=""/>
+									<img src={this.state.recommedList[0].poster} alt=""/>
 									<a href="#" className="card__play">
 										<i className="icon ion-ios-play"></i>
 									</a>
 								</div>
 								<div className="card__content">
-									<h3 className="card__title"><a href="#">I Dream in Another Language</a></h3>
-									<span className="card__category">
-										<a href="#">Action</a>
-										<a href="#">Triler</a>
-									</span>
-									<span className="card__rate"><i className="icon ion-ios-star"></i>8.4</span>
+									<h3 className="card__title cardheader"><Link to={`/home/detail/${this.state.recommedList[0]._id}`}>{this.state.recommedList[0].name}</Link></h3>
 								</div>
 							</div>
-						</div>
+							</div>
+
+
+							<div className="col-sm-7 col-lg-9 mx-auto">
+							<div className="card homecolor border-0">
+								<div className="card__cover">
+									<img src={this.state.recommedList[1].poster} alt=""/>
+									<a href="#" className="card__play">
+										<i className="icon ion-ios-play"></i>
+									</a>
+								</div>
+								<div className="card__content">
+									<h3 className="card__title cardheader"><Link to={`/home/detail/${this.state.recommedList[1]._id}`}>{this.state.recommedList[1].name}</Link></h3>
+								</div>
+							</div>
+							</div>
+							</div>
+
+
+
+						}
+						{/* Item */}
+
 					</div>
 
 					</div>
@@ -267,7 +295,6 @@ class CommentArea extends Component {
 		item.comment[index] = comment;
 		this.setState({listComment: item},()=>reviewservice.update(this.state.listComment._id,this.state.listComment).then(res => console.log(res)
 		).catch(err => console.log(err)))
-
 	}
 	removeConfirm=comment=>{
 		this.dialog.show({
@@ -531,7 +558,6 @@ class ReviewArea extends Component {
 				reviewservice.update(review._id,review).then(res => this.repopulateState(review)
 				).catch(err => console.log(err))
 				console.log(review.like)
-	
 				return ;
 			}
 			if( review.like.indexOf(localStorage.getItem('personId'))>= 0)
@@ -643,9 +669,10 @@ class ReviewArea extends Component {
 
 		</div>
 		</div>
+		{this.state.reviewList && this.state.reviewList.length === 0 ? null : <div className="b-description_readmore_button" onClick={()=>this.readMoreBtn()}></div>}
 
-		<div className="b-description_readmore_button" onClick={()=>this.readMoreBtn()}></div>
-		<h5 className= " text-light cardheader pointercursor text-center"  onClick={()=>this.readMoreBtn()}>{this.state.message}</h5> 
+{/* 		
+		<h5 className= " text-light cardheader pointercursor text-center"  onClick={()=>this.readMoreBtn()}>{this.state.message}</h5>  */}
 
 		</div>
 		</div>

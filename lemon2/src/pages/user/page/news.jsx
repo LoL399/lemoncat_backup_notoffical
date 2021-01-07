@@ -5,11 +5,16 @@ import renderHTML from 'react-render-html';
 import Wait from '../../Other/LoadingScreen';
 import userservice from '../service/userservice';
 import commentservice from '../service/commentservice';
+import Dialog from 'react-bootstrap-dialog';
+import { Link } from 'react-router-dom';
+import movieservice from '../service/movieservice';
 class NewsDetail extends Component {
-	state = { isLogin: true, newsInfo: null, date: "" }
+	state = { isLogin: true, newsInfo: null, date: "", recommedList: null, listNews: null }
 
 
 	componentDidMount(){
+		movieservice.list(this.state.page).then(res => {this.setState({recommedList: res.data.movies}); console.log(this.state.recommedList)})
+		newsservice.list(this.state.page).then(res => {this.setState({listNews: res.data.news}); console.log(this.state.listNews)})
 
 		newsservice.getOne(this.props.match.params.id).then(res=> 
 			{
@@ -32,6 +37,9 @@ class NewsDetail extends Component {
             <div className="h-100">
                 <section className="section details homecolor border-0 ">
                 <div className="container">
+				<div className="details__bg bgMovie">
+
+				</div>
                     <div className="row">
                     <div className="col-12 col-lg-8 col-xl-8 content__head container">
 					{this.state.newsInfo===null? <div className="d-block mx-auto container"><Wait/></div>:
@@ -72,52 +80,51 @@ class NewsDetail extends Component {
                         </div>
                         <div className="col-12 col-lg-3 col-xl-3 ">
 						<div className="col-12">
-							<h2 className="section__title section__title--sidebar">You may also like...</h2>
+							<h2 className="section__title section__title--sidebar">Các phim được đề xuất...</h2>
 						</div>
 						{/* Item */}
-						<div className=" col-sm-7 col-lg-12 mx-auto">
+						{
+							this.state.recommedList === null ? <div className="d-block mx-auto container"><Wait/> </div> :
+							<div>
+							<div className="col-sm-7 col-lg-9 mx-auto">
 							<div className="card homecolor border-0">
 								<div className="card__cover">
-									<img src={cover} alt=""/>
+									<img src={this.state.recommedList[0].poster} alt=""/>
 									<a href="#" className="card__play">
 										<i className="icon ion-ios-play"></i>
 									</a>
 								</div>
 								<div className="card__content">
-									<h3 className="card__title"><a href="#">I Dream in Another Language</a></h3>
-									<span className="card__category">
-										<a href="#">Action</a>
-										<a href="#">Triler</a>
-									</span>
-									<span className="card__rate"><i className="icon ion-ios-star"></i>8.4</span>
+									<h3 className="card__title cardheader"><Link to={`/home/detail/${this.state.recommedList[0]._id}`}>{this.state.recommedList[0].name}</Link></h3>
 								</div>
 							</div>
-						</div>
-						<div className="col-sm-7 col-lg-12 mx-auto">
+							</div>
+
+
+							<div className="col-sm-7 col-lg-9 mx-auto">
 							<div className="card homecolor border-0">
 								<div className="card__cover">
-									<img src={cover} alt=""/>
+									<img src={this.state.recommedList[1].poster} alt=""/>
 									<a href="#" className="card__play">
 										<i className="icon ion-ios-play"></i>
 									</a>
 								</div>
 								<div className="card__content">
-									<h3 className="card__title"><a href="#">I Dream in Another Language</a></h3>
-									<span className="card__category">
-										<a href="#">Action</a>
-										<a href="#">Triler</a>
-									</span>
-									<span className="card__rate"><i className="icon ion-ios-star"></i>8.4</span>
+									<h3 className="card__title cardheader"><Link to={`/home/detail/${this.state.recommedList[1]._id}`}>{this.state.recommedList[1].name}</Link></h3>
 								</div>
 							</div>
-						</div>
-                        
+							</div>
+							</div>
+
+
+
+						}
 					</div>
                     </div>
                 </div>
                 <div className="container">
 				<h2 className="section__title">Tin tức mới nhất</h2>
-					<NewsSection/>
+				{this.state.listNews=== null ? <div className="d-block mx-auto container"><Wait/></div> :<NewsItem  list={this.state.listNews}/>}
 				</div>
 				</section>
                 
@@ -127,50 +134,103 @@ class NewsDetail extends Component {
     }
 }
 
-class NewsSection extends Component {
-	state = {  }
+class NewsItem extends Component {
+
+	state = { }
+
+
+
 	render() { 
-		return (         
-		<div class="row">
-
-		{/* Item */}
-		<div class="col-sm-6">
-			<div class="card homecolor border-0 mr-2">
+		return ( 
 			<div class="row">
-				<div class=" col-sm-6">
-					<img src={cover} className=" mx-auto d-block w-75 h-75"/>
-					
-				</div>
-				<div class=" col-sm-6">  
-				<div class="card-body">
-				   
-					<div className="text-light" >
-						<h3 className="text-light">It is a long established fact that a reader.</h3>
-						<small className="text-light">09/09/2020</small>
-					</div>
+			{/* Item */}
+			
+			{this.props.list.map((news,idx)=>{
+                let date = new Date(String(news.createdAt));
+                let year = date.getFullYear();
+                let month = date.getMonth()+1;
+                let dt = date.getDate();
+                
+                if (dt < 10) {
+                  dt = '0' + dt;
+                }
+                if (month < 10) {
+                  month = '0' + month;
+                }
+				return(
+					<div class="col-sm-6">
+                <div class="card homecolor mr-2">
+                <div class="row">
+                    <div class=" col-sm-6">
+                        <img src={news.poster} className=" mt-4 mx-auto d-block w-75 h-75"/>
+                        
+                    </div>
+                    <div class=" col-sm-6">     
+                    <div class="card-body">
+                       
+                        <div className="text-light" >
+                            <h3 className="text-light">{news.name}.</h3>
+							<small className="text-light">{dt+'/' + month + '/'+year}</small>
+                        </div>
 
-					<button className="sign__btn" type="button">Đọc thêm →</button>
+						<Link to={`/home/news/${news._id}`}><button className="sign__btn" type="button">Đọc thêm →</button></Link>
 
-				</div>
-				</div>
+                    </div>
+                    </div>
+ 
+                    </div>
+                </div>
+            </div>
+				)
+			})}
 
-				</div>
+
+
+
+
 			</div>
-		</div>
-		</div> );
+
+		 );
 	}
 }
 
-
 class CommentNews extends Component {
-	state = { logIn: true, newsInfo: null, content: "" }
+	state = { logIn: true, newsInfo: null, content: "", recommedList: null  }
 
 	componentDidMount(){
+		movieservice.list(this.state.page).then(res => {this.setState({recommedList: res.data.movies}); console.log(this.state.recommedList)})
 		userservice.getInfo().then(()=>{
 			this.setState({logIn: true})
 		}).catch(()=>{this.setState({logIn: false})})
 		this.setState({newsInfo: this.props.newsInfo})
 	}
+	removeConfirm=comment=>{
+		this.dialog.show({
+		  title: 'Xác nhận',
+		  body: 'Bạn có muốn xóa bài bình luận ?',
+		  actions: [
+			Dialog.CancelAction(),
+			Dialog.OKAction(() => {
+				let item = this.state.newsInfo;
+				item.comment.pop((e)=> {return e._id=== comment._id}) 
+				this.setState({newsInfo: item},()=>newsservice.update(this.state.newsInfo._id,this.state.newsInfo).then(res => console.log(res)
+				).catch(err => console.log(err)))
+				
+				// let item = this.state.listComment;
+				// item.comment[index] = comment;
+				// this.setState({listComment: item},()=>reviewservice.update(this.state.listComment._id,this.state.listComment).then(res => console.log(res)
+				// ).catch(err => console.log(err)))
+
+			})
+		  ],
+		  bsSize: 'small',
+		  onHide: (dialog) => {
+			dialog.hide()
+			console.log('closed by clicking background.')
+		  }
+		})
+		
+	  }
 	
 
 	submit(){
@@ -221,7 +281,13 @@ class CommentNews extends Component {
 				return(
 					<li className="comments__item">
 						<CommentItem comment={comment}/>
-				</li>
+						<div class="comments__actions">
+						{comment.comment.byUser=== localStorage.getItem('personId')	 ? <button type="button" onClick={()=>this.removeConfirm()}><i class="icon ion-ios-bin" ></i>Xóa</button> : null}
+
+						</div>
+						<Dialog ref={(el) => { this.dialog = el }} />
+			
+					</li>
 				)
 
 			})}
@@ -240,6 +306,7 @@ class CommentItem extends Component {
 	componentDidMount(){
 		userservice.getUserInfo(this.props.comment.comment.byUser).then(res => {this.setState({name: res.data.name, photo: res.data.photo})})
 	}
+		
 
 
 	
@@ -263,6 +330,7 @@ class CommentItem extends Component {
 			</div>
 			
 			<p class="comments__text">{this.props.comment.comment.content}</p>
+
 			</div>
  );
 	}

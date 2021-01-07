@@ -16,13 +16,13 @@ const login = (req, res) => {
             id: data._id,
             
           }
-          return res.json({ data: returnData, token:  jwt.sign({ data: data._id }, 'Henshin')});
+          return res.json({ data: returnData, token:  jwt.sign({ data: data._id }, process.env.TOKEN_SECRET_ADMIN)});
 
         }
         else
         {
           console.log("not active");
-          return res.status(400).json("Your accout has ban. Please contact with the system later");
+          return res.status(200).json({err:403});
         }
 
 

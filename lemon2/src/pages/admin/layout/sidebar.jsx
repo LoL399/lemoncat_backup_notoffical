@@ -10,7 +10,9 @@ class SibeBar extends Component {
           <nav className="vertnav navbar navbar-light">
           <div className="w-100 mb-4 d-flex">
             <a className="navbar-brand mx-auto mt-2 flex-fill text-center pointercursor">
-            <img src={logo} className="navbar-brand-img brand-sm  logoLemon "/>
+              {this.props.collapsed === true ?             <img src={logo} className="navbar-brand-img brand-sm  logoLemonAdminSmall "/>
+              :             <img src={logo} className="navbar-brand-img brand-sm  logoLemonAdmin "/>}
+
             </a>
           </div>
           <ul className="navbar-nav flex-fill w-100 mb-2">
@@ -38,18 +40,6 @@ class SibeBar extends Component {
                 <span className="ml-3 item-text">NEWS</span>
               </Link>
             </li>
-            <li className="nav-item">
-              <Link to="/admin/review" className="nav-link">
-                <i className="fe fe-grid fe-16"></i>
-                <span className="ml-3 item-text">REVIEWS</span>
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/admin/comment" className="nav-link">
-                <i className="fe fe-grid fe-16"></i>
-                <span className="ml-3 item-text">COMMENT</span>
-              </Link>
-            </li>
           </ul>
           <p className="text-muted nav-heading mt-4 mb-1">
             <span>MOVIES</span>
@@ -58,7 +48,7 @@ class SibeBar extends Component {
             <li className="nav-item dropdown">
               <Link to="/admin/movie" className="nav-link">
                 <i className="fe fe-book fe-16"></i>
-                <span className="ml-3 item-text">MOVIES</span>
+                <span className="ml-3 item-text">LIST</span>
               </Link>
             </li>
             <li className="nav-item dropdown">
@@ -68,21 +58,9 @@ class SibeBar extends Component {
               </Link>
             </li>
             <li className="nav-item dropdown">
-              <Link to="/admin/role" className="nav-link">
-                <i className="fe fe-user fe-16"></i>
-                <span className="ml-3 item-text">ROLES</span>
-              </Link>
-            </li>
-            <li className="nav-item dropdown">
-              <Link to="/admin/top" className="nav-link">
-                <i className="fe fe-folder fe-16"></i>
-                <span className="ml-3 item-text">TOP MOVIES</span>
-              </Link>
-            </li>
-            <li className="nav-item dropdown">
-              <Link to="/admin/award" className="nav-link">
+              <Link to="/admin/review" className="nav-link">
                 <i className="fe fe-star fe-16"></i>
-                <span className="ml-3 item-text">AWARD</span>
+                <span className="ml-3 item-text">REVIEWS</span>
               </Link>
             </li>
           </ul>
